@@ -5,7 +5,7 @@ import ru.basejava.model.Resume;
 import java.util.Arrays;
 
 public class ArrayStorage {
-    final int MAX_SIZE = 10000;
+    final int MAX_SIZE = 10001;
     Resume[] storage = new Resume[MAX_SIZE];
 
     private int size;
