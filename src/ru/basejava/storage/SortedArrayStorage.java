@@ -14,28 +14,22 @@ public class SortedArrayStorage extends AbstractArrayStorage {
     }
 
     @Override
-    protected void insert(Resume r) {
+    protected void insertResume(Resume r) {
         String uuid = r.getUuid();
         int index = -findIndex(uuid) - 1;
-        size++;
-        for (int i = size; i > index; i--) {
-            storage[i] = storage[i - 1];
-        }
+        System.arraycopy(storage, index, storage, index + 1, size - index);
         storage[index] = r;
     }
 
     @Override
-    protected void updateItem(int index, Resume rNew) {
+    protected void updateResume(int index, Resume rNew) {
         storage[index] = rNew;
     }
 
     @Override
-    protected void deleteItem(int index) {
-        for (int i = index; i < size - 1; i++) {
-            storage[i] = storage[i + 1];
-        }
+    protected void deleteResume(int index) {
+        System.arraycopy(storage, index + 1, storage, index, size - index - 1);
         storage[size] = null;
-        size--;
     }
 
 }

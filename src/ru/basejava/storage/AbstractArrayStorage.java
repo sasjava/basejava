@@ -22,7 +22,7 @@ public abstract class AbstractArrayStorage implements Storage {
         return Arrays.copyOf(storage, size);
     }
 
-    public Resume get(String uuid) {
+    public final Resume get(String uuid) {
         Resume resume = null;
         int index = findIndex(uuid);
         if (index == -1) {
@@ -33,7 +33,7 @@ public abstract class AbstractArrayStorage implements Storage {
         return resume;
     }
 
-    public void save(Resume r) {
+    public final void save(Resume r) {
         String uuid = r.getUuid();
         if (size == MAX_SIZE) {
             System.out.println("Storage is full. Resume " + uuid + " is not saved");
@@ -42,24 +42,26 @@ public abstract class AbstractArrayStorage implements Storage {
         if (findIndex(uuid) >= 0) {
             messageResumeExists(uuid);
         } else {
-            insert(r);
+            insertResume(r);
+            size++;
         }
     }
 
-    public void update(Resume rNew) {
+    public final void update(Resume rNew) {
         String uuid = rNew.getUuid();
         int index = findIndex(uuid);
         if (index == -1) {
             messageResumeMissing(uuid);
         } else {
-            updateItem(index, rNew);
+            updateResume(index, rNew);
         }
     }
 
-    public void delete(String uuid) {
+    public final void delete(String uuid) {
         int index = findIndex(uuid);
         if (index != -1) {
-            deleteItem(index);
+            deleteResume(index);
+            size--;
         } else {
             messageResumeMissing(uuid);
         }
@@ -67,11 +69,11 @@ public abstract class AbstractArrayStorage implements Storage {
 
     protected abstract int findIndex(String uuid);
 
-    protected abstract void insert(Resume r);
+    protected abstract void insertResume(Resume r);
 
-    protected abstract void updateItem(int index, Resume rNew);
+    protected abstract void updateResume(int index, Resume rNew);
 
-    protected abstract void deleteItem(int index);
+    protected abstract void deleteResume(int index);
 
     protected void messageResumeMissing(String uuid) {
         System.out.println("Resume " + uuid + " is missing");
