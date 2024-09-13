@@ -8,7 +8,8 @@ import ru.basejava.model.Resume;
 import java.util.Arrays;
 
 public abstract class AbstractArrayStorage implements Storage {
-    protected static final int MAX_SIZE = 10001;
+    protected static final int MAX_SIZE = 10;
+    protected static final String STORAGE_OVERFLOW = "Storage overflow";
     protected Resume[] storage = new Resume[MAX_SIZE];
     protected int size = 0;
 
@@ -17,8 +18,10 @@ public abstract class AbstractArrayStorage implements Storage {
     }
 
     public void clear() {
-        Arrays.fill(storage, 0, size, null);
-        size = 0;
+        if (size > 0) {
+            Arrays.fill(storage, 0, size, null);
+            size = 0;
+        }
     }
 
     public Resume[] getAll() {
@@ -39,7 +42,7 @@ public abstract class AbstractArrayStorage implements Storage {
         if (index >= 0) {
             throw new ExistStorageException(uuid);
         } else if (size == MAX_SIZE) {
-            throw new StorageException("Storage overflow", uuid);
+            throw new StorageException(STORAGE_OVERFLOW, uuid);
         } else {
             insertResume(r);
             size++;
