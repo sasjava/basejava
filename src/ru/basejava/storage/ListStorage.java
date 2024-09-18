@@ -3,50 +3,63 @@ package ru.basejava.storage;
 import ru.basejava.model.Resume;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class ListStorage extends AbstractStorage {
-    protected ArrayList<Resume> arrayList = new ArrayList();
+    protected List<Resume> list = new ArrayList<>();
 
     @Override
     public int size() {
-        return arrayList.size();
+        return list.size();
     }
 
     @Override
     public void clear() {
-        arrayList.clear();
+        list.clear();
     }
 
     @Override
     public Resume[] getAll() {
-        return arrayList.toArray(Resume[]::new);
-    }
-
-    protected int findIndex(String uuid) {
-        Resume resume = new Resume(uuid);
-        return arrayList.indexOf(resume);
+        return list.toArray(Resume[]::new);
     }
 
     @Override
-    protected void deleteResume(int index) {
-        arrayList.remove(index);
+    protected Integer getSearchKey(String uuid) {
+        int index = -1;
+        for (int i = 0; i < list.size(); i++) {
+            if (list.get(i).getUuid().equals(uuid)) {
+                index = i;
+                break;
+            }
+        }
+        return index;
     }
-
-    protected void updateResume(int index, Resume rNew) {
-        arrayList.set(index, rNew);
+    @Override
+    protected boolean isExist(Object searchKey) {
+        int index = (int) searchKey;
+        return index >= 0;
+    }
+    @Override
+    protected Resume doGet(Object searchKey) {
+        int index = (int) searchKey;
+        return list.get(index);
     }
 
     @Override
-    protected Resume get(int index) {
-        return arrayList.get(index);
+    protected void doUpdate(Resume rNew, Object searchKey) {
+        int index = (int) searchKey;
+        list.set(index, rNew);
     }
 
     @Override
-    protected void insertResume(Resume r) {
-        arrayList.add(r);
+    protected void doSave(Resume r) {
+        list.add(r);
     }
 
     @Override
-    protected void check_overflow(String uuid) {
+    protected void doDelete(Object searchKey) {
+        int index = (int) searchKey;
+        list.remove(index);
     }
+
 }

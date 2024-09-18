@@ -26,16 +26,29 @@ public abstract class AbstractArrayStorage extends AbstractStorage {
     public Resume[] getAll() {
         return Arrays.copyOf(storage, size);
     }
-
     @Override
-    protected Resume get(int index) {
-        return storage[index];
+    protected boolean isExist(Object searchKey) {
+        int index = (int) searchKey;
+        return index >= 0;
     }
 
     @Override
-    protected void check_overflow(String uuid) {
+    protected void doUpdate(Resume rNew, Object searchKey) {
+        int index = (int) searchKey;
+        storage[index] = rNew;
+    }
+
+    @Override
+    public void save(Resume r) {
         if (size >= MAX_SIZE) {
-            throw new StorageException(STORAGE_OVERFLOW, uuid);
+            throw new StorageException(STORAGE_OVERFLOW, r.getUuid());
         }
+        super.save(r);
+    }
+
+    @Override
+    protected Resume doGet(Object searchKey) {
+        int index = (int) searchKey;
+        return storage[index];
     }
 }

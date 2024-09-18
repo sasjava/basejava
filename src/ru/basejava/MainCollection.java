@@ -2,6 +2,7 @@ package ru.basejava;
 
 import ru.basejava.model.Resume;
 import ru.basejava.storage.ListStorage;
+import ru.basejava.storage.MapStorage;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -44,7 +45,15 @@ public class MainCollection {
         listStorage.save(resume2);
 
         Resume[] resumes = listStorage.getAll();
-        MainArray.printAll(listStorage);
-        System.out.println("GET UUID_1:" + listStorage.get(UUID_1));
+        //MainArray.printAll(listStorage);
+        //System.out.println("GET UUID_1:" + listStorage.get(UUID_1));
+
+        MapStorage mapStorage = new MapStorage();
+        mapStorage.save(resume3);
+        mapStorage.save(resume1);
+        mapStorage.save(resume2);
+
+        resumes = mapStorage.getAll();
+        MainArray.printAll(mapStorage);
     }
 }
