@@ -5,7 +5,7 @@ import ru.basejava.model.Resume;
 public class ArrayStorage extends AbstractArrayStorage {
 
     @Override
-    protected Integer getSearchKey(String uuid) {
+    protected Integer findIndex(String uuid) {
         int index = -1;
         for (int i = 0; i < size; i++) {
             if (storage[i].getUuid().equals(uuid)) {
@@ -17,16 +17,13 @@ public class ArrayStorage extends AbstractArrayStorage {
     }
 
     @Override
-    protected void doSave(Resume r) {
+    protected void insertResume(Resume r, Object searchKey) {
         storage[size] = r;
-        size++;
     }
 
     @Override
-    protected void doDelete(Object searchKey) {
+    protected void deleteResume(Object searchKey) {
         int index = (int) searchKey;
         storage[index] = storage[size - 1];
-        size--;
-        storage[size] = null;
     }
 }

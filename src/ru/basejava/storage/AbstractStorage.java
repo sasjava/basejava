@@ -11,8 +11,7 @@ public abstract class AbstractStorage implements Storage {
     }
 
     public void save(Resume r) {
-        getNotExistingSearchKey(r.getUuid());
-        doSave(r);
+        doSave(r, getNotExistingSearchKey(r.getUuid()));
     }
 
     public final void delete(String uuid) {
@@ -27,16 +26,15 @@ public abstract class AbstractStorage implements Storage {
 
     protected abstract Object getSearchKey(String uuid);
 
-    protected abstract Resume doGet(Object searchKey);
-
     protected abstract boolean isExist(Object searchKey);
 
-    protected abstract void doUpdate(Resume rNew, Object searchKey);
-    //protected abstract void updateResume(int index, Resume rNew);
+    protected abstract Resume doGet(Object searchKey);
 
-    protected abstract void doSave(Resume r);
+    protected abstract void doSave(Resume r, Object searchKey);
 
     protected abstract void doDelete(Object searchKey);
+
+    protected abstract void doUpdate(Resume rNew, Object searchKey);
 
     private Object getExistingSearchKey(String uuid) {
         Object searchKey = getSearchKey(uuid);
