@@ -5,23 +5,24 @@ import ru.basejava.model.Resume;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MapStorage extends AbstractStorage {
-    protected final Map<String, Resume> map = new HashMap<>();
+public class MapUuidStorage extends AbstractStorage {
+    protected Map<String, Resume> map = new HashMap<>();
 
     @Override
-    protected Resume getSearchKey(String uuid) {
-        return map.get(uuid);
+    protected String getSearchKey(String uuid) {
+        return uuid;
     }
 
     @Override
     protected boolean isExist(Object searchKey) {
-        Resume r = (Resume) searchKey;
-        return map.containsValue(r);
+        String key = (String) searchKey;
+        return map.containsKey(key);
     }
 
     @Override
     protected Resume doGet(Object searchKey) {
-        return (Resume) searchKey;
+        String key = (String) searchKey;
+        return map.get(key);
     }
 
     @Override
@@ -30,15 +31,15 @@ public class MapStorage extends AbstractStorage {
     }
 
     @Override
-    protected void doDelete(Object searchKey) {
-        Resume r = (Resume) searchKey;
-        map.remove(r.getUuid());
+    protected void doUpdate(Resume rNew, Object searchKey) {
+        String key = (String) searchKey;
+        map.replace(key, rNew);
     }
 
     @Override
-    protected void doUpdate(Resume rNew, Object searchKey) {
-        Resume r = (Resume) searchKey;
-        map.replace(r.getUuid(), rNew);
+    protected void doDelete(Object searchKey) {
+        String key = (String) searchKey;
+        map.remove(key);
     }
 
     @Override

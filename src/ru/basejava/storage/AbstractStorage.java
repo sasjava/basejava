@@ -4,7 +4,24 @@ import ru.basejava.exception.ExistStorageException;
 import ru.basejava.exception.NotExistStorageException;
 import ru.basejava.model.Resume;
 
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
+
 public abstract class AbstractStorage implements Storage {
+
+    protected static final Comparator<Resume> RESUME_COMPARATOR = Comparator.comparing(Resume::getFullName).thenComparing(Resume::getUuid);
+//    protected static final Comparator<Resume> RESUME_COMPARATOR = new Comparator<Resume>() {
+//        @Override
+//        public int compare(Resume o1, Resume o2) {
+//            int compare = o1.getFullName().compareTo(o2.getFullName());
+//            if (compare == 0) {
+//                compare = o1.getUuid().compareTo(o2.getUuid());
+//            }
+//            return compare;
+//        }
+//    };
+
     public final Resume get(String uuid) {
         Object searchKey = getExistingSearchKey(uuid);
         return doGet(searchKey);
@@ -19,11 +36,15 @@ public abstract class AbstractStorage implements Storage {
         doDelete(searchKey);
     }
 
-    public final void update(Resume rNew) {
-        Object searchKey = getExistingSearchKey(rNew.getUuid());
-        doUpdate(rNew, searchKey);
+    public final void update(Resume newResume) {
+        Object searchKey = getExistingSearchKey(newResume.getUuid());
+        doUpdate(newResume, searchKey);
     }
-
+    public List<Resume> getAllSorted() {
+        Resume[] arrayStorage = getAll();
+        Arrays.sort(arrayStorage, RESUME_COMPARATOR);
+        return Arrays.asList(arrayStorage);
+    }
     protected abstract Object getSearchKey(String uuid);
 
     protected abstract boolean isExist(Object searchKey);
