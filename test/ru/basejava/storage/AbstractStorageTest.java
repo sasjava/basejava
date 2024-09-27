@@ -14,18 +14,15 @@ import static org.junit.Assert.assertEquals;
 
 public abstract class AbstractStorageTest {
     protected Storage storage;
-    private static final String UUID_1 = "uuid1";
-    private static final String UUID_2 = "uuid2";
-    private static final String UUID_3 = "uuid3";
-    private static final String UUID_NEW = "uuidNew";
-    private static final String DUMMY = "dummy";
     private static final String FNAME_1 = "B";
     private static final String FNAME_2 = "B";
     private static final String FNAME_3 = "A";
-    private static final Resume resume1 = new Resume(UUID_1, FNAME_1);
-    private static final Resume resume2 = new Resume(UUID_2, FNAME_2);
-    private static final Resume resume3 = new Resume(UUID_3, FNAME_3);
-    private static final Resume resumeNew = new Resume(UUID_NEW);
+    private static final String FNAME_NEW = "New";
+    private static final String DUMMY = "dummy";
+    private static final Resume resume1 = new Resume(FNAME_1);
+    private static final Resume resume2 = new Resume(FNAME_2);
+    private static final Resume resume3 = new Resume(FNAME_3);
+    private static final Resume resumeNew = new Resume(FNAME_NEW);
     private static final Resume resumeDummy = new Resume(DUMMY);
 
     public AbstractStorageTest() {
@@ -53,12 +50,12 @@ public abstract class AbstractStorageTest {
     public final void clear() {
         storage.clear();
         assertSize(0);
-        assertArrayEquals(new Resume[0], storage.getAll());
+        assertArrayEquals(new Resume[0], storage.getAllSorted().toArray(new Resume[0]));
     }
 
     @Test
     public final void getAll() {
-        Resume[] resumes = storage.getAll();
+        Resume[] resumes = storage.getAllSorted().toArray(new Resume[0]);
         assertEquals(storage.size(), resumes.length);
         Resume[] expectedArr = {resume1, resume2, resume3};
         Arrays.sort(resumes);
@@ -76,8 +73,11 @@ public abstract class AbstractStorageTest {
         assertEquals(storage.size(), list.size());
 
         Resume[] resumes = list.toArray(new Resume[0]);
-        Resume[] expectedArr = {resume3, resume1, resume2};
-
+        Resume[] expectedArr = {resume3, resume2, resume1};
+        if (resume1.getUuid().compareTo(resume2.getUuid()) < 0) {
+            expectedArr[1] = resume1;
+            expectedArr[2] = resume2;
+        }
         assertArrayEquals(expectedArr, resumes);
         for (int i = 0; i < list.size(); i++) {
             assertEquals(list.get(i), expectedArr[i]);
@@ -101,17 +101,18 @@ public abstract class AbstractStorageTest {
 
     @Test
     public final void update() {
-        Resume resume = resume1;
+        Resume resume = new Resume(resume1.getUuid(), FNAME_NEW);
         storage.update(resume);
-        assertEquals(resume, storage.get(UUID_1));
+        assertEquals(resume, storage.get(resume.getUuid()));
     }
 
     @Test(expected = NotExistStorageException.class)
     public final void delete() {
         int size = storage.size();
-        storage.delete(UUID_1);
+        String uuid1 = resume1.getUuid();
+        storage.delete(uuid1);
         assertSize(--size);
-        storage.get(UUID_1);
+        storage.get(uuid1);
     }
 
     @Test(expected = NotExistStorageException.class)

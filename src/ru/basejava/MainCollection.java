@@ -3,7 +3,7 @@ package ru.basejava;
 import ru.basejava.model.Resume;
 import ru.basejava.storage.ArrayStorage;
 import ru.basejava.storage.ListStorage;
-import ru.basejava.storage.MapStorage;
+import ru.basejava.storage.MapResumeStorage;
 
 import java.util.*;
 
@@ -18,14 +18,10 @@ public class MainCollection {
     private static final Resume RESUME4;
 
     static {
-        RESUME1 = new Resume(UUID_1);
-        RESUME2 = new Resume(UUID_2);
-        RESUME3 = new Resume(UUID_3);
-        RESUME4 = new Resume(UUID_4);
-        RESUME1.setFullName("ВВВ");
-        RESUME2.setFullName("БББ");
-        RESUME3.setFullName("ВВВ");
-        RESUME4.setFullName("ААА");
+        RESUME1 = new Resume(UUID_1, "ВВВ");
+        RESUME2 = new Resume(UUID_2, "БББ");
+        RESUME3 = new Resume(UUID_3, "ВВВ");
+        RESUME4 = new Resume(UUID_4, "ААА");
     }
 
     public static void main(String[] args) {
@@ -49,7 +45,7 @@ public class MainCollection {
         listStorage.save(RESUME1);
         listStorage.save(RESUME2);
 
-        Resume[] resumes = listStorage.getAll();
+        Resume[] resumes = listStorage.getAllSorted().toArray(new Resume[0]);
         //MainArray.printAll(listStorage);
         //System.out.println("GET UUID_1:" + listStorage.get(UUID_1));
 
@@ -61,10 +57,10 @@ public class MainCollection {
 //            System.out.println(entry.getValue());
 //        }
 
-        MapStorage mapStorage = new MapStorage();
-        mapStorage.save(RESUME3);
-        mapStorage.save(RESUME1);
-        mapStorage.save(RESUME2);
+        MapResumeStorage mapResumeStorage = new MapResumeStorage();
+        mapResumeStorage.save(RESUME3);
+        mapResumeStorage.save(RESUME1);
+        mapResumeStorage.save(RESUME2);
 
         //resumes = mapStorage.getAll();
         //MainArray.printAll(mapStorage);

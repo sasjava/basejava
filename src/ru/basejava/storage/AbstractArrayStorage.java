@@ -4,6 +4,7 @@ import ru.basejava.exception.StorageException;
 import ru.basejava.model.Resume;
 
 import java.util.Arrays;
+import java.util.List;
 
 public abstract class AbstractArrayStorage extends AbstractStorage {
 
@@ -21,10 +22,6 @@ public abstract class AbstractArrayStorage extends AbstractStorage {
             Arrays.fill(storage, 0, size, null);
             size = 0;
         }
-    }
-
-    public Resume[] getAll() {
-        return Arrays.copyOf(storage, size);
     }
 
     @Override
@@ -64,6 +61,11 @@ public abstract class AbstractArrayStorage extends AbstractStorage {
         deleteResume(searchKey);
         storage[size - 1] = null;
         size--;
+    }
+
+    @Override
+    protected List<Resume> doCopyAll() {
+        return Arrays.asList(Arrays.copyOf(storage, size));
     }
 
     protected abstract Integer findIndex(String uuid);

@@ -2,8 +2,7 @@ package ru.basejava.storage;
 
 import ru.basejava.model.Resume;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class MapUuidStorage extends AbstractStorage {
     protected Map<String, Resume> map = new HashMap<>();
@@ -37,6 +36,11 @@ public class MapUuidStorage extends AbstractStorage {
     }
 
     @Override
+    protected List<Resume> doCopyAll() {
+        return new ArrayList<>(map.values());
+    }
+
+    @Override
     protected void doDelete(Object searchKey) {
         String key = (String) searchKey;
         map.remove(key);
@@ -52,8 +56,4 @@ public class MapUuidStorage extends AbstractStorage {
         map.clear();
     }
 
-    @Override
-    public Resume[] getAll() {
-        return map.values().toArray(new Resume[0]);
-    }
 }

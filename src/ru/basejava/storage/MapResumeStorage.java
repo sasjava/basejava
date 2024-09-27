@@ -2,10 +2,12 @@ package ru.basejava.storage;
 
 import ru.basejava.model.Resume;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-public class MapStorage extends AbstractStorage {
+public class MapResumeStorage extends AbstractStorage {
     protected final Map<String, Resume> map = new HashMap<>();
 
     @Override
@@ -15,8 +17,7 @@ public class MapStorage extends AbstractStorage {
 
     @Override
     protected boolean isExist(Object searchKey) {
-        Resume r = (Resume) searchKey;
-        return map.containsValue(r);
+        return searchKey != null;
     }
 
     @Override
@@ -36,9 +37,14 @@ public class MapStorage extends AbstractStorage {
     }
 
     @Override
-    protected void doUpdate(Resume rNew, Object searchKey) {
-        Resume r = (Resume) searchKey;
+    protected void doUpdate(Resume rNew, Object resume) {
+        Resume r = (Resume) resume;
         map.replace(r.getUuid(), rNew);
+    }
+
+    @Override
+    protected List<Resume> doCopyAll() {
+        return new ArrayList<>(map.values());
     }
 
     @Override
@@ -49,10 +55,5 @@ public class MapStorage extends AbstractStorage {
     @Override
     public void clear() {
         map.clear();
-    }
-
-    @Override
-    public Resume[] getAll() {
-        return map.values().toArray(new Resume[0]);
     }
 }
