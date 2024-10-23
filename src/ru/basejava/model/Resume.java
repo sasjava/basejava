@@ -1,7 +1,6 @@
 package ru.basejava.model;
 
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Initial resume class
@@ -10,6 +9,9 @@ public class Resume implements Comparable<Resume> {
     // Unique identifier
     private final String uuid;
     private String fullName;
+
+    private final Map<ContactType, String> contacts = new HashMap<>();
+    private final Map<SectionType, List<AbstractSection>> sections = new HashMap<>();
 
     public Resume(String fullName) {
         this.uuid = UUID.randomUUID().toString();
@@ -59,5 +61,27 @@ public class Resume implements Comparable<Resume> {
 
     public void setFullName(String fullName) {
         this.fullName = fullName;
+    }
+
+    public void addContact(ContactType contactType, String value) {
+        this.contacts.put(contactType, value);
+    }
+
+    public void addSection(SectionType sectionType, AbstractSection section) {
+        List<AbstractSection> sectionList = this.sections.get(sectionType);
+        if (sectionList == null) {
+            sectionList = new ArrayList<>();
+        }
+        sectionList.add(section);
+
+        this.sections.put(sectionType, sectionList);
+    }
+
+    public Map<ContactType, String> getContacts() {
+        return contacts;
+    }
+
+    public Map<SectionType, List<AbstractSection>> getSections() {
+        return sections;
     }
 }
