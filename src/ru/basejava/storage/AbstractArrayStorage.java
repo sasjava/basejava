@@ -6,7 +6,7 @@ import ru.basejava.model.Resume;
 import java.util.Arrays;
 import java.util.List;
 
-public abstract class AbstractArrayStorage extends AbstractStorage {
+public abstract class AbstractArrayStorage extends AbstractStorage<Integer> {
 
     protected Resume[] storage = new Resume[MAX_SIZE];
     protected int size = 0;
@@ -30,25 +30,22 @@ public abstract class AbstractArrayStorage extends AbstractStorage {
     }
 
     @Override
-    protected boolean isExist(Object searchKey) {
-        int index = (int) searchKey;
+    protected boolean isExist(Integer index) {
         return index >= 0;
     }
 
     @Override
-    protected Resume doGet(Object searchKey) {
-        int index = (int) searchKey;
+    protected Resume doGet(Integer index) {
         return storage[index];
     }
 
     @Override
-    protected void doUpdate(Resume rNew, Object searchKey) {
-        int index = (int) searchKey;
+    protected void doUpdate(Resume rNew, Integer index) {
         storage[index] = rNew;
     }
 
     @Override
-    public void doSave(Resume r, Object searchKey) {
+    public void doSave(Resume r, Integer searchKey) {
         if (size >= MAX_SIZE) {
             throw new StorageException(STORAGE_OVERFLOW, r.getUuid());
         }
@@ -57,7 +54,7 @@ public abstract class AbstractArrayStorage extends AbstractStorage {
     }
 
     @Override
-    protected void doDelete(Object searchKey) {
+    protected void doDelete(Integer searchKey) {
         deleteResume(searchKey);
         storage[size - 1] = null;
         size--;
@@ -70,7 +67,7 @@ public abstract class AbstractArrayStorage extends AbstractStorage {
 
     protected abstract Integer findIndex(String uuid);
 
-    protected abstract void insertResume(Resume r, Object searchKey);
+    protected abstract void insertResume(Resume r, int searchKey);
 
-    protected abstract void deleteResume(Object searchKey);
+    protected abstract void deleteResume(int searchKey);
 }

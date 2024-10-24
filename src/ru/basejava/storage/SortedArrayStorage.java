@@ -23,16 +23,15 @@ public class SortedArrayStorage extends AbstractArrayStorage {
     }
 
     @Override
-    protected void insertResume(Resume r, Object searchKey) {
-        int index = (int) searchKey;
+    protected void insertResume(Resume r, int searchKey) {
+        int index = searchKey;
         index = -index - 1;
         System.arraycopy(storage, index, storage, index + 1, size - index);
         storage[index] = r;
     }
 
     @Override
-    protected void deleteResume(Object searchKey) {
-        int index = (int) searchKey;
-        System.arraycopy(storage, index + 1, storage, index, size - index - 1);
+    protected void deleteResume(int searchKey) {
+        System.arraycopy(storage, searchKey + 1, storage, searchKey, size - searchKey - 1);
     }
 }

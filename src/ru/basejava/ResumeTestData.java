@@ -8,7 +8,69 @@ import java.util.Map;
 
 public class ResumeTestData {
     public static void main(String[] args) {
-        Resume r = new Resume("Григорий Кислин");
+        Resume r = createResumeData("uuid1", "Григорий Кислин");
+
+        System.out.println("--------------------------------");
+        System.out.println(r.getFullName());
+        System.out.println("--------------------------------");
+
+        ContactType contactType;
+        Map<ContactType, String> contacts = r.getContacts();
+        for (Map.Entry<ContactType, String> entry : contacts.entrySet()) {
+            contactType = entry.getKey();
+            System.out.println(contactType.getTitle() + ": " + entry.getValue());
+        }
+        System.out.println("----------------");
+
+        SectionType sectionType;
+        AbstractSection section;
+        TextSection textSection;
+        ListSection listSection;
+        CompanySection companySection;
+
+        List<String> items;
+        List<Company> companies;
+
+        List<Period> periods;
+        String description;
+
+        Map<SectionType, AbstractSection> sections = r.getSections();
+        for (Map.Entry<SectionType, AbstractSection> entry : sections.entrySet()) {
+            sectionType = entry.getKey();
+            section = entry.getValue();
+            System.out.println(sectionType.getTitle() + ": ");
+
+            if (section.getClass() == TextSection.class) {
+                textSection = (TextSection) section;
+                System.out.println(textSection.getContent());
+            } else if (section.getClass() == ListSection.class) {
+                listSection = (ListSection) section;
+                items = listSection.getItems();
+                for (String item : items) {
+                    System.out.println(item);
+                }
+            } else {
+                companySection = (CompanySection) section;
+                companies = companySection.getCompanies();
+                for (Company comp : companies) {
+                    System.out.println(comp.getName() + "(" + comp.getUrl() + ")");
+                    periods = comp.getPeriods();
+                    for (Period period : periods) {
+                        System.out.println("\t" + period.getBeginDate() + "\t" + period.getEndDate() + "\t" + period.getTitle());
+                        description = period.getDescription();
+                        if (!description.isEmpty()) {
+                            System.out.println("\t\t" + period.getDescription());
+                        }
+                    }
+                }
+            }
+            System.out.println();
+        }
+        System.out.println("----------------");
+    }
+
+    public static Resume createResumeData(String uuid, String fullName) {
+        Resume r = new Resume(uuid, fullName);
         r.addContact(ContactType.PHONE, "+7(921) 855-0482");
         r.addContact(ContactType.SKYPE, "skype:grigory.kislin");
         r.addContact(ContactType.MAIL, "gkislin@yandex.ru");
@@ -66,81 +128,6 @@ public class ResumeTestData {
                 "Инженер (программист Fortran, C)", "");
         companySection.addItem(company);
         r.addSection(SectionType.EDUCATION, companySection);
-
-        System.out.println("--------------------------------");
-        System.out.println(r.getFullName());
-        System.out.println("--------------------------------");
-
-        ContactType contactType;
-        Map<ContactType, String> contacts = r.getContacts();
-        for (Map.Entry<ContactType, String> entry : contacts.entrySet()) {
-            contactType = entry.getKey();
-            System.out.println(contactType.getTitle() + ": " + entry.getValue());
-        }
-        System.out.println("----------------");
-
-        SectionType sectionType;
-        AbstractSection section;
-        TextSection textSection;
-        ListSection listSection;
-
-        List<String> items;
-        List<Company> companies;
-
-        List<Period> periods;
-        String description;
-
-        Map<SectionType, AbstractSection> sections = r.getSections();
-        for (Map.Entry<SectionType, AbstractSection> entry : sections.entrySet()) {
-            sectionType = entry.getKey();
-            section = entry.getValue();
-            System.out.println(sectionType.getTitle() + ": ");
-
-            if (section.getClass() == TextSection.class) {
-                textSection = (TextSection) section;
-                System.out.println(textSection.getContent());
-            } else if (section.getClass() == ListSection.class) {
-                listSection = (ListSection) section;
-                items = listSection.getItems();
-                for (String item : items) {
-                    System.out.println(item);
-                }
-            } else {
-                companySection = (CompanySection) section;
-                companies = companySection.getCompanies();
-                for (Company comp : companies) {
-                    System.out.println(comp.getName() + "(" + comp.getUrl() + ")");
-                    periods = comp.getPeriods();
-                    for (Period period : periods) {
-                        System.out.println("\t" + period.getBeginDate() + "\t" + period.getEndDate() + "\t" + period.getTitle());
-                        description = period.getDescription();
-                        if (!description.isEmpty()) {
-                            System.out.println("\t\t" + period.getDescription());
-                        }
-                    }
-                }
-            }
-//            for (AbstractSection section : sectionList) {
-//                list = section.getItems();
-//                for (Object line : list) {
-//                    if (line.getClass() == Company.class) {
-//                        company = (Company) line;
-//                        System.out.println(company.getName() + "(" + company.getUrl() + ")");
-//                        periods = company.getPeriods();
-//                        for (Period period : periods) {
-//                            System.out.println("\t" + period.getBeginDate() + "\t" + period.getEndDate() + "\t" + period.getTitle());
-//                            description = period.getDescription();
-//                            if (!description.isEmpty()) {
-//                                System.out.println("\t\t" + period.getDescription());
-//                            }
-//                        }
-//                    } else {
-//                        System.out.println(line);
-//                    }
-//                }
-//            }
-            System.out.println();
-        }
-        System.out.println("----------------");
+        return r;
     }
 }

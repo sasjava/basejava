@@ -2,6 +2,7 @@ package ru.basejava.storage;
 
 import org.junit.Before;
 import org.junit.Test;
+import ru.basejava.ResumeTestData;
 import ru.basejava.exception.ExistStorageException;
 import ru.basejava.exception.NotExistStorageException;
 import ru.basejava.model.Resume;
@@ -19,11 +20,11 @@ public abstract class AbstractStorageTest {
     private static final String FNAME_3 = "A";
     private static final String FNAME_NEW = "New";
     private static final String DUMMY = "dummy";
-    private static final Resume resume1 = new Resume(FNAME_1);
-    private static final Resume resume2 = new Resume(FNAME_2);
-    private static final Resume resume3 = new Resume(FNAME_3);
-    private static final Resume resumeNew = new Resume(FNAME_NEW);
-    private static final Resume resumeDummy = new Resume(DUMMY);
+    private static final Resume resume1 = ResumeTestData.createResumeData("uuid1", FNAME_1); //new Resume(FNAME_1);
+    private static final Resume resume2 = ResumeTestData.createResumeData("uuid2", FNAME_2); //new Resume(FNAME_2);
+    private static final Resume resume3 = ResumeTestData.createResumeData("uuid3", FNAME_3); //new Resume(FNAME_3);
+    private static final Resume resumeNew = ResumeTestData.createResumeData("uuidnew", FNAME_NEW); //new Resume(FNAME_NEW);
+    private static final Resume resumeDummy = ResumeTestData.createResumeData("uuiddummy", DUMMY); //new Resume(DUMMY);
 
     public AbstractStorageTest() {
         this.storage = new ArrayStorage();

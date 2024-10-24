@@ -25,7 +25,7 @@ public class MainCollection {
     }
 
     public static void main(String[] args) {
-        Collection<Resume> collection = new ArrayList();
+        Collection<Resume> collection = new ArrayList<>();
         collection.add(RESUME1);
         collection.add(RESUME2);
         collection.add(RESUME3);
@@ -45,9 +45,9 @@ public class MainCollection {
         listStorage.save(RESUME1);
         listStorage.save(RESUME2);
 
-        Resume[] resumes = listStorage.getAllSorted().toArray(new Resume[0]);
-        //MainArray.printAll(listStorage);
-        //System.out.println("GET UUID_1:" + listStorage.get(UUID_1));
+//        Resume[] resumes = listStorage.getAllSorted().toArray(new Resume[0]);
+//        MainArray.printAll(listStorage);
+//        System.out.println("GET UUID_1:" + listStorage.get(UUID_1));
 
         Map<String, Resume> map = new HashMap<>();
         map.put(UUID_1, RESUME1);
