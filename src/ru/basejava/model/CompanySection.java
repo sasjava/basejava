@@ -2,23 +2,24 @@ package ru.basejava.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class CompanySection extends AbstractSection {
-    private List<Company> list;
+    private List<Company> companies;
 
     public CompanySection(Company company) {
-        addLine(company);
+        Objects.requireNonNull(company, "Company must not be null");
+        addItem(company);
     }
 
-    public void addLine(Company company) {
-        if (this.list == null) {
-            this.list = new ArrayList<>();
+    public void addItem(Company company) {
+        if (this.companies == null) {
+            this.companies = new ArrayList<>();
         }
-        this.list.add(company);
+        this.companies.add(company);
     }
 
-    @Override
-    public List getList() {
-        return list;
+    public List<Company> getCompanies() {
+        return companies;
     }
 }

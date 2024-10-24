@@ -27,12 +27,12 @@ public class ResumeTestData {
 
         //ACHIEVEMENT("Достижения")
         ListSection achievement = new ListSection("Достижение 1.");
-        achievement.addLine("Достижение 2.");
+        achievement.addItem("Достижение 2.");
         r.addSection(SectionType.ACHIEVEMENT, achievement);
 
         //QUALIFICATIONS("Квалификация")
         ListSection qualifications = new ListSection("Квалификация 1.");
-        qualifications.addLine("Квалификация 2.");
+        qualifications.addItem("Квалификация 2.");
         r.addSection(SectionType.QUALIFICATIONS, qualifications);
 
         //EXPERIENCE("Опыт работы")
@@ -47,7 +47,7 @@ public class ResumeTestData {
                 LocalDate.of(2014, 10, 1), LocalDate.of(2016, 1, 1),
                 "Старший разработчик (backend)",
                 "Проектирование и разработка онлайн платформы управления проектами Wrike.");
-        companySection = new CompanySection(company);
+        companySection.addItem(company);
         r.addSection(SectionType.EXPERIENCE, companySection);
 
         //EDUCATION("Образование")
@@ -64,7 +64,7 @@ public class ResumeTestData {
                 "Аспирантура (программист С, С++)", "");
         company.addPeriods(LocalDate.of(1993, 9, 1), LocalDate.of(1996, 7, 1),
                 "Инженер (программист Fortran, C)", "");
-        companySection = new CompanySection(company);
+        companySection.addItem(company);
         r.addSection(SectionType.EDUCATION, companySection);
 
         System.out.println("--------------------------------");
@@ -80,35 +80,65 @@ public class ResumeTestData {
         System.out.println("----------------");
 
         SectionType sectionType;
-        List<AbstractSection> sectionList;
-        List list;
+        AbstractSection section;
+        TextSection textSection;
+        ListSection listSection;
+
+        List<String> items;
+        List<Company> companies;
+
         List<Period> periods;
         String description;
 
-        Map<SectionType, List<AbstractSection>> sections = r.getSections();
-        for (Map.Entry<SectionType, List<AbstractSection>> entry : sections.entrySet()) {
+        Map<SectionType, AbstractSection> sections = r.getSections();
+        for (Map.Entry<SectionType, AbstractSection> entry : sections.entrySet()) {
             sectionType = entry.getKey();
-            sectionList = entry.getValue();
+            section = entry.getValue();
             System.out.println(sectionType.getTitle() + ": ");
-            for (AbstractSection section : sectionList) {
-                list = section.getList();
-                for (Object line : list) {
-                    if (line.getClass() == Company.class) {
-                        company = (Company) line;
-                        System.out.println(company.getName() + "(" + company.getWebsite() + ")");
-                        periods = company.getPeriods();
-                        for (Period period : periods) {
-                            System.out.println("\t" + period.getBegdate() + "\t" + period.getEnddate() + "\t" + period.getTitle());
-                            description = period.getDescription();
-                            if (!description.isEmpty()) {
-                                System.out.println("\t\t" + period.getDescription());
-                            }
+
+            if (section.getClass() == TextSection.class) {
+                textSection = (TextSection) section;
+                System.out.println(textSection.getContent());
+            } else if (section.getClass() == ListSection.class) {
+                listSection = (ListSection) section;
+                items = listSection.getItems();
+                for (String item : items) {
+                    System.out.println(item);
+                }
+            } else {
+                companySection = (CompanySection) section;
+                companies = companySection.getCompanies();
+                for (Company comp : companies) {
+                    System.out.println(comp.getName() + "(" + comp.getUrl() + ")");
+                    periods = comp.getPeriods();
+                    for (Period period : periods) {
+                        System.out.println("\t" + period.getBeginDate() + "\t" + period.getEndDate() + "\t" + period.getTitle());
+                        description = period.getDescription();
+                        if (!description.isEmpty()) {
+                            System.out.println("\t\t" + period.getDescription());
                         }
-                    } else {
-                        System.out.println(line);
                     }
                 }
             }
+//            for (AbstractSection section : sectionList) {
+//                list = section.getItems();
+//                for (Object line : list) {
+//                    if (line.getClass() == Company.class) {
+//                        company = (Company) line;
+//                        System.out.println(company.getName() + "(" + company.getUrl() + ")");
+//                        periods = company.getPeriods();
+//                        for (Period period : periods) {
+//                            System.out.println("\t" + period.getBeginDate() + "\t" + period.getEndDate() + "\t" + period.getTitle());
+//                            description = period.getDescription();
+//                            if (!description.isEmpty()) {
+//                                System.out.println("\t\t" + period.getDescription());
+//                            }
+//                        }
+//                    } else {
+//                        System.out.println(line);
+//                    }
+//                }
+//            }
             System.out.println();
         }
         System.out.println("----------------");

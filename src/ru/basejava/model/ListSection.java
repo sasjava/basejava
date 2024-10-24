@@ -2,20 +2,21 @@ package ru.basejava.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class ListSection extends AbstractSection {
-    private final List<String> list = new ArrayList<>();
+    private final List<String> items = new ArrayList<>();
 
-    public ListSection(String line) {
-        addLine(line);
+    public ListSection(String item) {
+        Objects.requireNonNull(item, "line must not be null");
+        addItem(item);
     }
 
-    public void addLine(String line) {
-        this.list.add(line);
+    public void addItem(String line) {
+        this.items.add(line);
     }
 
-    @Override
-    public List getList() {
-        return list;
+    public List<String> getItems() {
+        return items;
     }
 }
