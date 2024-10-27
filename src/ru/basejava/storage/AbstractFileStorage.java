@@ -3,8 +3,7 @@ package ru.basejava.storage;
 import ru.basejava.exception.StorageException;
 import ru.basejava.model.Resume;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -35,7 +34,11 @@ public abstract class AbstractFileStorage extends AbstractStorage<File> {
 
     @Override
     protected Resume doGet(File file) {
-        return doRead(file);
+        try {
+            return this.doRead(file);
+        } catch (IOException e) {
+            throw new StorageException("Error reading file", file.getName(), e);
+        }
     }
 
     @Override
@@ -50,7 +53,9 @@ public abstract class AbstractFileStorage extends AbstractStorage<File> {
 
     @Override
     protected void doDelete(File file) {
-        file.delete();
+        if (!file.delete()) {
+            throw new StorageException("Error deleting file", file.getName());
+        };
     }
 
     @Override
@@ -68,7 +73,7 @@ public abstract class AbstractFileStorage extends AbstractStorage<File> {
 
         File[] listFiles = directory.listFiles();
         for (File f : Objects.requireNonNull(listFiles)) {
-            Resume r = doRead(f);
+            Resume r = this.doGet(f);
             listResumes.add(r);
         }
         return listResumes;
@@ -84,11 +89,11 @@ public abstract class AbstractFileStorage extends AbstractStorage<File> {
         File[] listFiles = directory.listFiles();
         assert listFiles != null;
         for (File f : listFiles) {
-            f.delete();
+            doDelete(f);
         }
     }
 
-    protected abstract Resume doRead(File file);
+    protected abstract Resume doRead(File file) throws IOException;
 
     protected abstract void doWrite(Resume r, File file) throws IOException;
 }
