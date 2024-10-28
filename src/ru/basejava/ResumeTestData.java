@@ -2,7 +2,7 @@ package ru.basejava;
 
 import ru.basejava.model.*;
 
-import java.time.LocalDate;
+import java.time.Month;
 import java.util.List;
 import java.util.Map;
 
@@ -31,7 +31,7 @@ public class ResumeTestData {
         List<String> items;
         List<Company> companies;
 
-        List<Period> periods;
+        List<Company.Period> periods;
         String description;
 
         Map<SectionType, AbstractSection> sections = r.getSections();
@@ -55,7 +55,7 @@ public class ResumeTestData {
                 for (Company comp : companies) {
                     System.out.println(comp.getName() + "(" + comp.getUrl() + ")");
                     periods = comp.getPeriods();
-                    for (Period period : periods) {
+                    for (Company.Period period : periods) {
                         System.out.println("\t" + period.getBeginDate() + "\t" + period.getEndDate() + "\t" + period.getTitle());
                         description = period.getDescription();
                         if (!description.isEmpty()) {
@@ -88,46 +88,43 @@ public class ResumeTestData {
                 new TextSection("Аналитический склад ума, сильная логика, креативность, инициативность."));
 
         //ACHIEVEMENT("Достижения")
-        ListSection achievement = new ListSection("Достижение 1.");
-        achievement.addItem("Достижение 2.");
+        ListSection achievement = new ListSection("Достижение 1.", "Достижение 2.");
         r.addSection(SectionType.ACHIEVEMENT, achievement);
 
         //QUALIFICATIONS("Квалификация")
-        ListSection qualifications = new ListSection("Квалификация 1.");
-        qualifications.addItem("Квалификация 2.");
+        ListSection qualifications = new ListSection("Квалификация 1.", "Квалификация 2.");
         r.addSection(SectionType.QUALIFICATIONS, qualifications);
 
         //EXPERIENCE("Опыт работы")
-        Company company = new Company("Java Online Projects", "http://javaops.ru/",
-                LocalDate.of(2013, 10, 1), LocalDate.now(),
-                "Автор проекта.",
-                "Создание, организация и проведение Java онлайн проектов и стажировок.");
-        CompanySection companySection = new CompanySection(company);
-        r.addSection(SectionType.EXPERIENCE, companySection);
-
-        company = new Company("Wrike", "https://www.wrike.com/",
-                LocalDate.of(2014, 10, 1), LocalDate.of(2016, 1, 1),
-                "Старший разработчик (backend)",
-                "Проектирование и разработка онлайн платформы управления проектами Wrike.");
-        companySection.addItem(company);
-        r.addSection(SectionType.EXPERIENCE, companySection);
+        r.addSection(SectionType.EXPERIENCE,
+                new CompanySection(
+                        new Company("Java Online Projects", "http://javaops.ru/",
+                                new Company.Period(2013, Month.of(10),
+                                        "Автор проекта.", "Создание, организация и проведение Java онлайн проектов и стажировок.")
+                        ),
+                        new Company("Wrike", "https://www.wrike.com/",
+                                new Company.Period(2014, Month.of(10), 2016, Month.of(1),
+                                        "Старший разработчик (backend)", "Проектирование и разработка онлайн платформы управления проектами Wrike.")
+                        )
+                )
+        );
 
         //EDUCATION("Образование")
-        company = new Company("Coursera", "https://www.coursera.org/course/progfun",
-                LocalDate.of(2013, 3, 1), LocalDate.of(2013, 5, 1),
-                "Functional Programming Principles in Scala' by Martin Odersky",
-                "");
-        companySection = new CompanySection(company);
-        r.addSection(SectionType.EDUCATION, companySection);
-
-        company = new Company("Санкт-Петербургский национальный исследовательский университет информационных технологий, механики и оптики",
-                "http://www.ifmo.ru/",
-                LocalDate.of(1993, 9, 1), LocalDate.of(1996, 7, 1),
-                "Аспирантура (программист С, С++)", "");
-        company.addPeriods(LocalDate.of(1993, 9, 1), LocalDate.of(1996, 7, 1),
-                "Инженер (программист Fortran, C)", "");
-        companySection.addItem(company);
-        r.addSection(SectionType.EDUCATION, companySection);
+        r.addSection(SectionType.EDUCATION,
+                new CompanySection(
+                        new Company("Coursera", "https://www.coursera.org/course/progfun",
+                                new Company.Period(2013, Month.of(3), 2013, Month.of(5),
+                                        "Functional Programming Principles in Scala' by Martin Odersky", "")
+                        ),
+                        new Company("Санкт-Петербургский национальный исследовательский университет информационных технологий, механики и оптики",
+                                "http://www.ifmo.ru/",
+                                new Company.Period(1993, Month.of(9), 1996, Month.of(7),
+                                        "Аспирантура (программист С, С++)", ""),
+                                new Company.Period(1987, Month.of(9), 1993, Month.of(7),
+                                        "Инженер (программист Fortran, C)", "")
+                        )
+                )
+        );
         return r;
     }
 }

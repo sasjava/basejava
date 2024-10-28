@@ -29,23 +29,6 @@ public class Resume implements Comparable<Resume> {
         return uuid;
     }
 
-    public String toString() {
-        return uuid + '(' + fullName + ')';
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Resume resume = (Resume) o;
-        return uuid.equals(resume.uuid) && fullName.equals(resume.fullName);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(uuid, fullName);
-    }
-
     @Override
     public int compareTo(Resume o) {
         int result = fullName.compareTo(o.fullName);
@@ -81,5 +64,22 @@ public class Resume implements Comparable<Resume> {
 
     public Map<SectionType, AbstractSection> getSections() {
         return sections;
+    }
+
+    public String toString() {
+        return uuid + '(' + fullName + ')';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Resume resume = (Resume) o;
+        return uuid.equals(resume.uuid) && fullName.equals(resume.fullName);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(uuid, fullName);
     }
 }
