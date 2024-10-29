@@ -1,5 +1,7 @@
 package ru.basejava.model;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.Arrays;
@@ -9,7 +11,9 @@ import java.util.Objects;
 import static java.time.YearMonth.of;
 
 
-public class Company {
+public class Company implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
     private final String name;
     private final String url;
     private final List<Period> periods;
@@ -54,7 +58,7 @@ public class Company {
         return "Company{" + name + ", " + url + ", " + periods + '}';
     }
 
-    public static class Period {
+    public static class Period implements Serializable {
         private final LocalDate beginDate;
         private final LocalDate endDate;
         private final String title;
