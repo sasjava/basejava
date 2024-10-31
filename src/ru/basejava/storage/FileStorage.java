@@ -2,6 +2,7 @@ package ru.basejava.storage;
 
 import ru.basejava.exception.StorageException;
 import ru.basejava.model.Resume;
+import ru.basejava.storage.serialization.SerializationStrategy;
 
 import java.io.*;
 import java.util.ArrayList;

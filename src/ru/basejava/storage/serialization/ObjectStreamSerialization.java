@@ -1,11 +1,12 @@
-package ru.basejava.storage;
+package ru.basejava.storage.serialization;
 
 import ru.basejava.exception.StorageException;
 import ru.basejava.model.Resume;
+import ru.basejava.storage.serialization.SerializationStrategy;
 
 import java.io.*;
 
-public class ObjectStreamSerialization implements SerializationStrategy{
+public class ObjectStreamSerialization implements SerializationStrategy {
     @Override
     public Resume doRead(InputStream is) throws IOException {
         try (ObjectInputStream ois = new ObjectInputStream(is)) {

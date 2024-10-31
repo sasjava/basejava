@@ -1,4 +1,4 @@
-package ru.basejava.storage;
+package ru.basejava.storage.serialization;
 
 import ru.basejava.model.Resume;
 
