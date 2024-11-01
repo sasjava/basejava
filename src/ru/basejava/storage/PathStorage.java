@@ -4,13 +4,16 @@ import ru.basejava.exception.StorageException;
 import ru.basejava.model.Resume;
 import ru.basejava.storage.serialization.SerializationStrategy;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class PathStorage extends AbstractStorage<Path> {
     private final Path directory;
@@ -74,30 +77,27 @@ public class PathStorage extends AbstractStorage<Path> {
 
     @Override
     protected List<Resume> doCopyAll() {
-        List<Resume> listResumes = new ArrayList<>();
-        try {
-            Files.list(directory).forEach(path -> listResumes.add(doGet(path)));
-        } catch (IOException e) {
-            throw new StorageException("Error reading", null, e);
-        }
+        List<Resume> listResumes;
+        listResumes = getFilesList().map(this::doGet).collect(Collectors.toList());
+
         return listResumes;
     }
 
     @Override
     public int size() {
-        try {
-            return (int) Files.list(directory).count();
-        } catch (IOException e) {
-            throw new StorageException("Size not available", null, e);
-        }
+        return (int) getFilesList().count();
     }
 
     @Override
     public void clear() {
+        getFilesList().forEach(this::doDelete);
+    }
+
+    private Stream<Path> getFilesList() {
         try {
-            Files.list(directory).forEach(this::doDelete);
+            return Files.list(directory);
         } catch (IOException e) {
-            throw new StorageException("Path delete error", "");
+            throw new StorageException("Files list reading error", null, e);
         }
     }
 }
