@@ -22,7 +22,7 @@ public abstract class AbstractStorageTest {
     private static final String FNAME_3 = "A";
     private static final String FNAME_NEW = "New";
     private static final String DUMMY = "dummy";
-    private static final Resume R1 = ResumeTestData.createResumeData("uuid1", FNAME_1);
+    private static final Resume R1  = ResumeTestData.createResumeData("uuid1", FNAME_1);
     private static final Resume R2 = ResumeTestData.createResumeData("uuid2", FNAME_2);
     private static final Resume R3 = ResumeTestData.createResumeData("uuid3", FNAME_3);
     private static final Resume R_NEW = ResumeTestData.createResumeData("uuidnew", FNAME_NEW);

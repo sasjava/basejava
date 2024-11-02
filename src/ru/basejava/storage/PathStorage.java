@@ -2,7 +2,7 @@ package ru.basejava.storage;
 
 import ru.basejava.exception.StorageException;
 import ru.basejava.model.Resume;
-import ru.basejava.storage.serialization.SerializationStrategy;
+import ru.basejava.storage.serialization.StreamSerializer;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -17,9 +17,9 @@ import java.util.stream.Stream;
 
 public class PathStorage extends AbstractStorage<Path> {
     private final Path directory;
-    private final SerializationStrategy serialization;
+    private final StreamSerializer serialization;
 
-    public PathStorage(String dir, SerializationStrategy sS) {
+    public PathStorage(String dir, StreamSerializer sS) {
         directory = Paths.get(dir);
         this.serialization = sS;
         Objects.requireNonNull(directory, "directory must not be null");

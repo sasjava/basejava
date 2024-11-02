@@ -8,7 +8,7 @@ import java.util.Objects;
 public class ListSection extends AbstractSection {
     @Serial
     private static final long serialVersionUID = 1L;
-    private final List<String> items;
+    private List<String> items;
 
     public ListSection(String... items) {
         this(Arrays.asList(items));
@@ -17,6 +17,9 @@ public class ListSection extends AbstractSection {
     public ListSection(List<String> items) {
         Objects.requireNonNull(items, "items must not be null");
         this.items = items;
+    }
+
+    public ListSection() {
     }
 
     public List<String> getItems() {

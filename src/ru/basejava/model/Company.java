@@ -1,5 +1,10 @@
 package ru.basejava.model;
 
+import ru.basejava.util.LocalDateAdapter;
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDate;
@@ -10,13 +15,13 @@ import java.util.Objects;
 
 import static java.time.YearMonth.of;
 
-
+@XmlAccessorType(XmlAccessType.FIELD)
 public class Company implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
-    private final String name;
-    private final String url;
-    private final List<Period> periods;
+    private String name;
+    private String url;
+    private List<Period> periods;
 
     public Company(String name, String url, Period... periods) {
         this(name, url, Arrays.asList(periods));
@@ -26,6 +31,9 @@ public class Company implements Serializable {
         this.name = name;
         this.url = url;
         this.periods = periods;
+    }
+
+    public Company() {
     }
 
     public String getName() {
@@ -58,11 +66,15 @@ public class Company implements Serializable {
         return "Company{" + name + ", " + url + ", " + periods + '}';
     }
 
+    @XmlAccessorType(XmlAccessType.FIELD)
     public static class Period implements Serializable {
-        private final LocalDate beginDate;
-        private final LocalDate endDate;
-        private final String title;
-        private final String description;
+        @XmlJavaTypeAdapter(LocalDateAdapter.class)
+        //@JsonAdapter(LocalDateAdapter.class)
+        private LocalDate beginDate;
+        @XmlJavaTypeAdapter(LocalDateAdapter.class)
+        private LocalDate endDate;
+        private String title;
+        private String description;
 
         public Period(LocalDate beginDate, LocalDate endDate, String title, String description) {
             Objects.requireNonNull(title, "title must not be null");
@@ -82,6 +94,9 @@ public class Company implements Serializable {
         public Period(int beginYear, Month beginMonth,
                       String title, String description) {
             this(of(beginYear, beginMonth).atDay(1), LocalDate.now(), title, description);
+        }
+
+        public Period() {
         }
 
         public LocalDate getBeginDate() {
