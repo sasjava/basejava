@@ -79,6 +79,11 @@ public class ResumeTestData {
         r.addContact(ContactType.STACKOVERFLOW, "https://stackoverflow.com/users/548473");
         r.addContact(ContactType.HOMEPAGE, "http://gkislin.ru/");
 
+        addSections(r);
+        return r;
+    }
+
+    private static void addSections(Resume r) {
         //Позиция
         r.addSection(SectionType.OBJECTIVE,
                 new TextSection("Ведущий стажировок и корпоративного обучения по Java Web и Enterprise технологиям"));
@@ -125,6 +130,5 @@ public class ResumeTestData {
                         )
                 )
         );
-        return r;
     }
 }
