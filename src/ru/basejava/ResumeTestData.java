@@ -103,7 +103,7 @@ public class ResumeTestData {
         //EXPERIENCE("Опыт работы")
         r.addSection(SectionType.EXPERIENCE,
                 new CompanySection(
-                        new Company("Java Online Projects", "http://javaops.ru/",
+                        new Company("Java Online Projects", null, //"http://javaops.ru/",
                                 new Company.Period(2013, Month.of(10),
                                         "Автор проекта.", "Создание, организация и проведение Java онлайн проектов и стажировок.")
                         ),
@@ -124,9 +124,9 @@ public class ResumeTestData {
                         new Company("Санкт-Петербургский национальный исследовательский университет информационных технологий, механики и оптики",
                                 "http://www.ifmo.ru/",
                                 new Company.Period(1993, Month.of(9), 1996, Month.of(7),
-                                        "Аспирантура (программист С, С++)", ""),
+                                        "Аспирантура (программист С, С++)", null),
                                 new Company.Period(1987, Month.of(9), 1993, Month.of(7),
-                                        "Инженер (программист Fortran, C)", "")
+                                        "Инженер (программист Fortran, C)", null)
                         )
                 )
         );

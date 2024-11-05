@@ -29,7 +29,7 @@ public class Company implements Serializable {
 
     public Company(String name, String url, List<Period> periods) {
         this.name = name;
-        this.url = url;
+        this.url = Objects.toString(url, "");
         this.periods = periods;
     }
 
@@ -82,8 +82,8 @@ public class Company implements Serializable {
             Objects.requireNonNull(endDate, "enddate must not be null");
             this.beginDate = beginDate;
             this.endDate = endDate;
-            this.title = title;
-            this.description = description;
+            this.title = Objects.toString(title, "");
+            this.description = Objects.toString(description, "");
         }
 
         public Period(int beginYear, Month beginMonth, int endYear, Month endMonth,
