@@ -100,9 +100,7 @@ public class DataStreamSerializer implements StreamSerializer {
     }
 
     private void writeCompanySection(DataOutputStream dos, AbstractSection sectionValue) throws IOException {
-        CompanySection cS = (CompanySection) sectionValue;
-        List<Company> companies = cS.getCompanies();
-        writeWithException(companies, dos, company -> {
+        writeWithException(((CompanySection) sectionValue).getCompanies(), dos, company -> {
                     dos.writeUTF(company.getName());
                     dos.writeUTF(Objects.toString(company.getUrl(), ""));
 
