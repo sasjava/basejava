@@ -4,12 +4,14 @@ import ru.basejava.model.*;
 
 import java.io.*;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 
 public class DataStreamSerializer implements StreamSerializer {
+    @FunctionalInterface
+    public interface SerialConsumer<T> {
+        void accept(T t) throws IOException;
+    }
 
     @Override
     public void doWrite(Resume r, OutputStream os) throws IOException {
@@ -17,18 +19,17 @@ public class DataStreamSerializer implements StreamSerializer {
             dos.writeUTF(r.getUuid());
             dos.writeUTF(r.getFullName());
 
-            Map<ContactType, String> contacts = r.getContacts();
-            dos.writeInt(contacts.size());
-            for (Map.Entry<ContactType, String> entry : contacts.entrySet()) {
-                dos.writeUTF(entry.getKey().name());
-                dos.writeUTF(entry.getValue());
-            }
-
-            Map<SectionType, AbstractSection> sections = r.getSections();
-            dos.writeInt(sections.size());
-            for (Map.Entry<SectionType, AbstractSection> entry : sections.entrySet()) {
-                writeSection(dos, entry.getKey(), entry.getValue());
-            }
+            Set<Map.Entry<ContactType, String>> contactSet = r.getContacts().entrySet();
+            writeWithException(
+                    contactSet, dos, entry -> {
+                        dos.writeUTF(entry.getKey().name());
+                        dos.writeUTF(entry.getValue());
+                    }
+            );
+            Set<Map.Entry<SectionType, AbstractSection>> sectionSet = r.getSections().entrySet();
+            writeWithException(
+                    sectionSet, dos, entry -> writeSection(dos, entry.getKey(), entry.getValue())
+            );
         }
     }
 
@@ -39,14 +40,12 @@ public class DataStreamSerializer implements StreamSerializer {
             String fullName = dis.readUTF();
             Resume resume = new Resume(uuid, fullName);
 
-            int size = dis.readInt();
-            for (int i = 0; i < size; i++) {
-                resume.addContact(ContactType.valueOf(dis.readUTF()), dis.readUTF());
-            }
-            size = dis.readInt();
-            for (int i = 0; i < size; i++) {
-                readSection(dis, SectionType.valueOf(dis.readUTF()), resume);
-            }
+            readWithException(
+                    resume, dis, r -> r.addContact(ContactType.valueOf(dis.readUTF()), dis.readUTF())
+            );
+            readWithException(
+                    resume, dis, r -> readSection(dis, SectionType.valueOf(dis.readUTF()), r)
+            );
             return resume;
         }
     }
@@ -54,30 +53,33 @@ public class DataStreamSerializer implements StreamSerializer {
     private void writeSection(DataOutputStream dos, SectionType sectionType, AbstractSection value) throws IOException {
         dos.writeUTF(sectionType.name());
         switch (sectionType) {
-            case OBJECTIVE -> writeTextSection(dos, value);      //Позиция
-            case PERSONAL -> writeTextSection(dos, value);       //Личные качества
-            case ACHIEVEMENT -> writeListSection(dos, value);    //Достижения
-            case QUALIFICATIONS -> writeListSection(dos, value); //Квалификация
-            case EXPERIENCE -> writeCompanySection(dos, value);  //Опыт работы
-            case EDUCATION -> writeCompanySection(dos, value);   //Образование
+            case OBJECTIVE, PERSONAL -> writeTextSection(dos, value);         //Позиция, Личные качества
+            case ACHIEVEMENT, QUALIFICATIONS -> writeListSection(dos, value); //Достижения, Квалификация
+            case EXPERIENCE, EDUCATION -> writeCompanySection(dos, value);    //Опыт работы, Образование
             default -> throw new IllegalStateException("Unexpected value: " + sectionType);
         }
     }
 
     private void readSection(DataInputStream dis, SectionType sectionType, Resume resume) throws IOException {
         switch (sectionType) {
-            case OBJECTIVE -> readTextSection(dis, sectionType.name(), resume);       //Позиция
-            case PERSONAL -> readTextSection(dis, sectionType.name(), resume);        //Личные качества
-            case ACHIEVEMENT -> readListSection(dis, sectionType.name(), resume);     //Достижения
-            case QUALIFICATIONS -> readListSection(dis, sectionType.name(), resume);  //Квалификация
-            case EXPERIENCE -> readCompanySection(dis, sectionType.name(), resume);   //Опыт работы
-            case EDUCATION -> readCompanySection(dis, sectionType.name(), resume);    //Образование
+            case OBJECTIVE, PERSONAL ->
+                    readTextSection(dis, sectionType.name(), resume);          //Позиция, Личные качества
+            case ACHIEVEMENT, QUALIFICATIONS ->
+                    readListSection(dis, sectionType.name(), resume); //Достижения, Квалификация
+            case EXPERIENCE, EDUCATION ->
+                    readCompanySection(dis, sectionType.name(), resume);    //Опыт работы, Образование
             default -> throw new IllegalStateException("Unexpected value: " + sectionType.name());
         }
     }
 
     private void writeTextSection(DataOutputStream dos, AbstractSection sectionValue) throws IOException {
-        dos.writeUTF(sectionValue.toString());
+        TextSection tS = (TextSection) sectionValue;
+        dos.writeUTF(tS.getContent());
+    }
+
+    private void readTextSection(DataInputStream dis, String sectionName, Resume resume) throws IOException {
+        String value = dis.readUTF();
+        resume.addSection(SectionType.valueOf(sectionName), new TextSection(value));
     }
 
     private void writeListSection(DataOutputStream dos, AbstractSection sectionValue) throws IOException {
@@ -87,6 +89,15 @@ public class DataStreamSerializer implements StreamSerializer {
         for (String item : items) {
             dos.writeUTF(item);
         }
+    }
+
+    private void readListSection(DataInputStream dis, String sectionName, Resume resume) throws IOException {
+        int count = dis.readInt();
+        List<String> items = new ArrayList<>();
+        for (int j = 0; j < count; j++) {
+            items.add(dis.readUTF());
+        }
+        resume.addSection(SectionType.valueOf(sectionName), new ListSection(items));
     }
 
     private void writeCompanySection(DataOutputStream dos, AbstractSection sectionValue) throws IOException {
@@ -99,26 +110,12 @@ public class DataStreamSerializer implements StreamSerializer {
             List<Company.Period> periods = company.getPeriods();
             dos.writeInt(periods.size());
             for (Company.Period p : periods) {
-                dos.writeUTF(p.getBeginDate().toString());
-                dos.writeUTF(p.getEndDate().toString());
+                dos.writeUTF(p.getBeginDate().format(DateTimeFormatter.ISO_LOCAL_DATE));
+                dos.writeUTF(p.getEndDate().format(DateTimeFormatter.ISO_LOCAL_DATE));
                 dos.writeUTF(Objects.toString(p.getTitle(), ""));
                 dos.writeUTF(Objects.toString(p.getDescription(), ""));
             }
         }
-    }
-
-    private void readTextSection(DataInputStream dis, String sectionName, Resume resume) throws IOException {
-        String value = dis.readUTF();
-        resume.addSection(SectionType.valueOf(sectionName), new TextSection(value));
-    }
-
-    private void readListSection(DataInputStream dis, String sectionName, Resume resume) throws IOException {
-        int count = dis.readInt();
-        List<String> items = new ArrayList<>();
-        for (int j = 0; j < count; j++) {
-            items.add(dis.readUTF());
-        }
-        resume.addSection(SectionType.valueOf(sectionName), new ListSection(items));
     }
 
     private void readCompanySection(DataInputStream dis, String sectionName, Resume resume) throws IOException {
@@ -139,5 +136,21 @@ public class DataStreamSerializer implements StreamSerializer {
             companies.add(new Company(companyName, companyUrl, periods));
         }
         resume.addSection(SectionType.valueOf(sectionName), new CompanySection(companies));
+    }
+
+    private <T> void writeWithException(Collection<T> collection, DataOutputStream dos,
+                                        SerialConsumer<T> action) throws IOException {
+        dos.writeInt(collection.size());
+        for (T line : collection) {
+            action.accept(line);
+        }
+    }
+
+    private void readWithException(Resume resume, DataInputStream dis,
+                                   SerialConsumer<Resume> action) throws IOException {
+        int size = dis.readInt();
+        for (int i = 0; i < size; i++) {
+            action.accept(resume);
+        }
     }
 }
