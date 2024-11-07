@@ -9,8 +9,13 @@ import java.util.*;
 
 public class DataStreamSerializer implements StreamSerializer {
     @FunctionalInterface
-    public interface SerialConsumer<T> {
-        void accept(T t) throws IOException;
+    public interface IWriter<T> {
+        void run(T t) throws IOException;
+    }
+
+    @FunctionalInterface
+    public interface IReader {
+        void run() throws IOException;
     }
 
     @Override
@@ -19,16 +24,14 @@ public class DataStreamSerializer implements StreamSerializer {
             dos.writeUTF(r.getUuid());
             dos.writeUTF(r.getFullName());
 
-            Set<Map.Entry<ContactType, String>> contactSet = r.getContacts().entrySet();
             writeWithException(
-                    contactSet, dos, entry -> {
+                    r.getContacts().entrySet(), dos, entry -> {
                         dos.writeUTF(entry.getKey().name());
                         dos.writeUTF(entry.getValue());
                     }
             );
-            Set<Map.Entry<SectionType, AbstractSection>> sectionSet = r.getSections().entrySet();
             writeWithException(
-                    sectionSet, dos, entry -> writeSection(dos, entry.getKey(), entry.getValue())
+                    r.getSections().entrySet(), dos, entry -> writeSection(dos, entry.getKey(), entry.getValue())
             );
         }
     }
@@ -41,10 +44,10 @@ public class DataStreamSerializer implements StreamSerializer {
             Resume resume = new Resume(uuid, fullName);
 
             readWithException(
-                    resume, dis, r -> r.addContact(ContactType.valueOf(dis.readUTF()), dis.readUTF())
+                    dis, () -> resume.addContact(ContactType.valueOf(dis.readUTF()), dis.readUTF())
             );
             readWithException(
-                    resume, dis, r -> readSection(dis, SectionType.valueOf(dis.readUTF()), r)
+                    dis, () -> readSection(dis, SectionType.valueOf(dis.readUTF()), resume)
             );
             return resume;
         }
@@ -83,74 +86,70 @@ public class DataStreamSerializer implements StreamSerializer {
     }
 
     private void writeListSection(DataOutputStream dos, AbstractSection sectionValue) throws IOException {
-        ListSection lS = (ListSection) sectionValue;
-        List<String> items = lS.getItems();
-        dos.writeInt(items.size());
-        for (String item : items) {
-            dos.writeUTF(item);
-        }
+        writeWithException(
+                ((ListSection) sectionValue).getItems(), dos, dos::writeUTF
+        );
     }
 
     private void readListSection(DataInputStream dis, String sectionName, Resume resume) throws IOException {
-        int count = dis.readInt();
         List<String> items = new ArrayList<>();
-        for (int j = 0; j < count; j++) {
-            items.add(dis.readUTF());
-        }
+        readWithException(
+                dis, () -> items.add(dis.readUTF())
+        );
         resume.addSection(SectionType.valueOf(sectionName), new ListSection(items));
     }
 
     private void writeCompanySection(DataOutputStream dos, AbstractSection sectionValue) throws IOException {
         CompanySection cS = (CompanySection) sectionValue;
         List<Company> companies = cS.getCompanies();
-        dos.writeInt(companies.size());
-        for (Company company : companies) {
-            dos.writeUTF(company.getName());
-            dos.writeUTF(Objects.toString(company.getUrl(), ""));
-            List<Company.Period> periods = company.getPeriods();
-            dos.writeInt(periods.size());
-            for (Company.Period p : periods) {
-                dos.writeUTF(p.getBeginDate().format(DateTimeFormatter.ISO_LOCAL_DATE));
-                dos.writeUTF(p.getEndDate().format(DateTimeFormatter.ISO_LOCAL_DATE));
-                dos.writeUTF(Objects.toString(p.getTitle(), ""));
-                dos.writeUTF(Objects.toString(p.getDescription(), ""));
-            }
-        }
+        writeWithException(companies, dos, company -> {
+                    dos.writeUTF(company.getName());
+                    dos.writeUTF(Objects.toString(company.getUrl(), ""));
+
+                    writeWithException(
+                            company.getPeriods(), dos, p -> {
+                                dos.writeUTF(p.getBeginDate().format(DateTimeFormatter.ISO_LOCAL_DATE));
+                                dos.writeUTF(p.getEndDate().format(DateTimeFormatter.ISO_LOCAL_DATE));
+                                dos.writeUTF(Objects.toString(p.getTitle(), ""));
+                                dos.writeUTF(Objects.toString(p.getDescription(), ""));
+                            }
+                    );
+                }
+        );
     }
 
     private void readCompanySection(DataInputStream dis, String sectionName, Resume resume) throws IOException {
-        int count = dis.readInt();
         List<Company> companies = new ArrayList<>();
-        for (int j = 0; j < count; j++) {  //Companies
-            String companyName = dis.readUTF();
-            String companyUrl = dis.readUTF();
-            int countP = dis.readInt();
-            List<Company.Period> periods = new ArrayList<>();
-            for (int k = 0; k < countP; k++) {
-                LocalDate beginDate = LocalDate.parse(dis.readUTF());
-                LocalDate endDate = LocalDate.parse(dis.readUTF());
-                String title = dis.readUTF();
-                String description = dis.readUTF();
-                periods.add(new Company.Period(beginDate, endDate, title, description));
-            }
-            companies.add(new Company(companyName, companyUrl, periods));
-        }
+        readWithException(dis, () -> {
+                    String companyName = dis.readUTF();
+                    String companyUrl = dis.readUTF();
+                    List<Company.Period> periods = new ArrayList<>();
+                    readWithException(dis, () -> {
+                                LocalDate beginDate = LocalDate.parse(dis.readUTF());
+                                LocalDate endDate = LocalDate.parse(dis.readUTF());
+                                String title = dis.readUTF();
+                                String description = dis.readUTF();
+                                periods.add(new Company.Period(beginDate, endDate, title, description));
+                            }
+                    );
+                    companies.add(new Company(companyName, companyUrl, periods));
+                }
+        );
         resume.addSection(SectionType.valueOf(sectionName), new CompanySection(companies));
     }
 
     private <T> void writeWithException(Collection<T> collection, DataOutputStream dos,
-                                        SerialConsumer<T> action) throws IOException {
+                                        IWriter<T> action) throws IOException {
         dos.writeInt(collection.size());
         for (T line : collection) {
-            action.accept(line);
+            action.run(line);
         }
     }
 
-    private void readWithException(Resume resume, DataInputStream dis,
-                                   SerialConsumer<Resume> action) throws IOException {
+    private void readWithException(DataInputStream dis, IReader action) throws IOException {
         int size = dis.readInt();
         for (int i = 0; i < size; i++) {
-            action.accept(resume);
+            action.run();
         }
     }
 }
