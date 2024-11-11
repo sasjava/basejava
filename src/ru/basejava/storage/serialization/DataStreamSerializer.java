@@ -24,13 +24,13 @@ public class DataStreamSerializer implements StreamSerializer {
             dos.writeUTF(r.getUuid());
             dos.writeUTF(r.getFullName());
 
-            writeWithException(
+            writeCollection(
                     r.getContacts().entrySet(), dos, entry -> {
                         dos.writeUTF(entry.getKey().name());
                         dos.writeUTF(entry.getValue());
                     }
             );
-            writeWithException(
+            writeCollection(
                     r.getSections().entrySet(), dos, entry -> writeSection(dos, entry.getKey(), entry.getValue())
             );
         }
@@ -43,10 +43,10 @@ public class DataStreamSerializer implements StreamSerializer {
             String fullName = dis.readUTF();
             Resume resume = new Resume(uuid, fullName);
 
-            readWithException(
+            readCollection(
                     dis, () -> resume.addContact(ContactType.valueOf(dis.readUTF()), dis.readUTF())
             );
-            readWithException(
+            readCollection(
                     dis, () -> readSection(dis, SectionType.valueOf(dis.readUTF()), resume)
             );
             return resume;
@@ -66,45 +66,43 @@ public class DataStreamSerializer implements StreamSerializer {
     private void readSection(DataInputStream dis, SectionType sectionType, Resume resume) throws IOException {
         switch (sectionType) {
             case OBJECTIVE, PERSONAL ->
-                    readTextSection(dis, sectionType.name(), resume);          //Позиция, Личные качества
+                    readTextSection(dis, sectionType.name(), resume);      //Позиция, Личные качества
             case ACHIEVEMENT, QUALIFICATIONS ->
-                    readListSection(dis, sectionType.name(), resume); //Достижения, Квалификация
+                    readListSection(dis, sectionType.name(), resume);     //Достижения, Квалификация
             case EXPERIENCE, EDUCATION ->
-                    readCompanySection(dis, sectionType.name(), resume);    //Опыт работы, Образование
+                    readCompanySection(dis, sectionType.name(), resume);  //Опыт работы, Образование
             default -> throw new IllegalStateException("Unexpected value: " + sectionType.name());
         }
     }
 
     private void writeTextSection(DataOutputStream dos, AbstractSection sectionValue) throws IOException {
-        TextSection tS = (TextSection) sectionValue;
-        dos.writeUTF(tS.getContent());
+        dos.writeUTF(((TextSection) sectionValue).getContent());
     }
 
     private void readTextSection(DataInputStream dis, String sectionName, Resume resume) throws IOException {
-        String value = dis.readUTF();
-        resume.addSection(SectionType.valueOf(sectionName), new TextSection(value));
+        resume.addSection(SectionType.valueOf(sectionName), new TextSection(dis.readUTF()));
     }
 
     private void writeListSection(DataOutputStream dos, AbstractSection sectionValue) throws IOException {
-        writeWithException(
+        writeCollection(
                 ((ListSection) sectionValue).getItems(), dos, dos::writeUTF
         );
     }
 
     private void readListSection(DataInputStream dis, String sectionName, Resume resume) throws IOException {
         List<String> items = new ArrayList<>();
-        readWithException(
+        readCollection(
                 dis, () -> items.add(dis.readUTF())
         );
         resume.addSection(SectionType.valueOf(sectionName), new ListSection(items));
     }
 
     private void writeCompanySection(DataOutputStream dos, AbstractSection sectionValue) throws IOException {
-        writeWithException(((CompanySection) sectionValue).getCompanies(), dos, company -> {
+        writeCollection(((CompanySection) sectionValue).getCompanies(), dos, company -> {
                     dos.writeUTF(company.getName());
                     dos.writeUTF(Objects.toString(company.getUrl(), ""));
 
-                    writeWithException(
+                    writeCollection(
                             company.getPeriods(), dos, p -> {
                                 dos.writeUTF(p.getBeginDate().format(DateTimeFormatter.ISO_LOCAL_DATE));
                                 dos.writeUTF(p.getEndDate().format(DateTimeFormatter.ISO_LOCAL_DATE));
@@ -118,11 +116,11 @@ public class DataStreamSerializer implements StreamSerializer {
 
     private void readCompanySection(DataInputStream dis, String sectionName, Resume resume) throws IOException {
         List<Company> companies = new ArrayList<>();
-        readWithException(dis, () -> {
+        readCollection(dis, () -> {
                     String companyName = dis.readUTF();
                     String companyUrl = dis.readUTF();
                     List<Company.Period> periods = new ArrayList<>();
-                    readWithException(dis, () -> {
+                    readCollection(dis, () -> {
                                 LocalDate beginDate = LocalDate.parse(dis.readUTF());
                                 LocalDate endDate = LocalDate.parse(dis.readUTF());
                                 String title = dis.readUTF();
@@ -136,15 +134,15 @@ public class DataStreamSerializer implements StreamSerializer {
         resume.addSection(SectionType.valueOf(sectionName), new CompanySection(companies));
     }
 
-    private <T> void writeWithException(Collection<T> collection, DataOutputStream dos,
-                                        IWriter<T> action) throws IOException {
+    private <T> void writeCollection(Collection<T> collection, DataOutputStream dos,
+                                     IWriter<T> action) throws IOException {
         dos.writeInt(collection.size());
         for (T line : collection) {
             action.run(line);
         }
     }
 
-    private void readWithException(DataInputStream dis, IReader action) throws IOException {
+    private void readCollection(DataInputStream dis, IReader action) throws IOException {
         int size = dis.readInt();
         for (int i = 0; i < size; i++) {
             action.run();
