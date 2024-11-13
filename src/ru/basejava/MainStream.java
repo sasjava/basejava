@@ -38,16 +38,17 @@ public class MainStream {
                 .collect(
                         Collectors.collectingAndThen(
                                 Collectors.partitioningBy(MainStream::isEven),
-                                map -> isEven(sum(integers)) ? map.get(false) : map.get(true)
+                                map -> isEven(map.get(false).size()) ? map.get(false) : map.get(true)
                         )
                 );
-    }
-
-    private static int sum(List<Integer> integerList) {
-        return integerList.stream().mapToInt(v -> v).sum();
     }
 
     private static boolean isEven(Integer x) {
         return (x & 1) == 0;
     }
+//    private static int sum(List<Integer> integerList) {
+//        return integerList.stream().mapToInt(v -> v).sum();
+//    }
+
+
 }
