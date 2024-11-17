@@ -65,12 +65,10 @@ public class DataStreamSerializer implements StreamSerializer {
 
     private void readSection(DataInputStream dis, SectionType sectionType, Resume resume) throws IOException {
         switch (sectionType) {
-            case OBJECTIVE, PERSONAL ->
-                    readTextSection(dis, sectionType, resume);      //Позиция, Личные качества
+            case OBJECTIVE, PERSONAL -> readTextSection(dis, sectionType, resume);      //Позиция, Личные качества
             case ACHIEVEMENT, QUALIFICATIONS ->
                     readListSection(dis, sectionType, resume);     //Достижения, Квалификация
-            case EXPERIENCE, EDUCATION ->
-                    readCompanySection(dis, sectionType, resume);  //Опыт работы, Образование
+            case EXPERIENCE, EDUCATION -> readCompanySection(dis, sectionType, resume);  //Опыт работы, Образование
             default -> throw new IllegalStateException("Unexpected value: " + sectionType.name());
         }
     }

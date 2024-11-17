@@ -12,20 +12,24 @@ public abstract class AbstractStorage<SK> implements Storage {
     protected static final Comparator<Resume> RESUME_COMPARATOR = Comparator.comparing(Resume::getFullName).thenComparing(Resume::getUuid);
 
     public final Resume get(String uuid) {
+        LOG.info("Get " + uuid);
         SK searchKey = getExistingSearchKey(uuid);
         return doGet(searchKey);
     }
 
     public void save(Resume r) {
+        LOG.info("Save " + r);
         doSave(r, getNotExistingSearchKey(r.getUuid()));
     }
 
     public final void delete(String uuid) {
+        LOG.info("Delete " + uuid);
         SK searchKey = getExistingSearchKey(uuid);
         doDelete(searchKey);
     }
 
     public final void update(Resume newResume) {
+        LOG.info("Update " + newResume);
         SK searchKey = getExistingSearchKey(newResume.getUuid());
         doUpdate(newResume, searchKey);
     }
@@ -55,6 +59,7 @@ public abstract class AbstractStorage<SK> implements Storage {
         if (isExist(searchKey)) {
             return searchKey;
         } else {
+            LOG.warning("Resume " + uuid + "does not exist");
             throw new NotExistStorageException(uuid);
         }
     }
@@ -64,6 +69,7 @@ public abstract class AbstractStorage<SK> implements Storage {
         if (!isExist(searchKey)) {
             return searchKey;
         } else {
+            LOG.warning("Resume " + uuid + "already exists");
             throw new ExistStorageException(uuid);
         }
     }

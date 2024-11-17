@@ -2,6 +2,7 @@ package ru.basejava.storage;
 
 import org.junit.Before;
 import org.junit.Test;
+import ru.basejava.Config;
 import ru.basejava.ResumeTestData;
 import ru.basejava.exception.ExistStorageException;
 import ru.basejava.exception.NotExistStorageException;
@@ -15,7 +16,7 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
 public abstract class AbstractStorageTest {
-    protected static final File STORAGE_DIR = new File("C:\\Java\\GitHub\\basejava\\FileStorage");
+    protected static final File STORAGE_DIR = Config.get().getStorageDir();
     protected Storage storage;
     private static final String FNAME_1 = "B";
     private static final String FNAME_2 = "B";
