@@ -1,8 +1,6 @@
 package ru.basejava.storage;
 
-import ru.basejava.exception.ExistStorageException;
 import ru.basejava.exception.NotExistStorageException;
-import ru.basejava.exception.StorageException;
 import ru.basejava.model.Resume;
 import ru.basejava.sql.SqlHelper;
 
@@ -41,7 +39,7 @@ public class SqlStorage implements Storage {
                     ResultSet rs = ps.executeQuery();
                     while (rs.next()) {
                         resumeList.add(new Resume(
-                                rs.getString("uuid").trim(),
+                                rs.getString("uuid"),
                                 rs.getString("full_name")));
                     }
                     return resumeList;
@@ -64,16 +62,12 @@ public class SqlStorage implements Storage {
     @Override
     public void save(Resume r) {
         String uuid = r.getUuid();
-        try {
-            sqlHelper.run("INSERT INTO resume (uuid, full_name) VALUES (?, ?)",
-                    ps -> {
-                        ps.setString(1, uuid);
-                        ps.setString(2, r.getFullName());
-                        return ps.executeUpdate();
-                    });
-        } catch (StorageException e) {
-            throw new ExistStorageException(uuid);
-        }
+        sqlHelper.run("INSERT INTO resume (uuid, full_name) VALUES (?, ?)",
+                ps -> {
+                    ps.setString(1, uuid);
+                    ps.setString(2, r.getFullName());
+                    return ps.executeUpdate();
+                });
     }
 
     @Override

@@ -11,6 +11,7 @@ import ru.basejava.model.Resume;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -23,10 +24,10 @@ public abstract class AbstractStorageTest {
     private static final String FNAME_3 = "A";
     private static final String FNAME_NEW = "New";
     private static final String DUMMY = "dummy";
-    private static final Resume R1  = ResumeTestData.createResumeData("uuid1", FNAME_1);
-    private static final Resume R2 = ResumeTestData.createResumeData("uuid2", FNAME_2);
-    private static final Resume R3 = ResumeTestData.createResumeData("uuid3", FNAME_3);
-    private static final Resume R_NEW = ResumeTestData.createResumeData("uuidnew", FNAME_NEW);
+    private static final Resume R1  = ResumeTestData.createResumeData(String.valueOf(UUID.randomUUID()), FNAME_1);
+    private static final Resume R2 = ResumeTestData.createResumeData(String.valueOf(UUID.randomUUID()), FNAME_2);
+    private static final Resume R3 = ResumeTestData.createResumeData(String.valueOf(UUID.randomUUID()), FNAME_3);
+    private static final Resume R_NEW = ResumeTestData.createResumeData(String.valueOf(UUID.randomUUID()), FNAME_NEW);
     private static final Resume R_DUMMY = ResumeTestData.createResumeData("uuiddummy", DUMMY);
 
     public AbstractStorageTest() {
