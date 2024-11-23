@@ -61,12 +61,12 @@ public class SqlStorage implements Storage {
 
     @Override
     public void save(Resume r) {
-        String uuid = r.getUuid();
-        sqlHelper.run("INSERT INTO resume (uuid, full_name) VALUES (?, ?)",
+        sqlHelper.<Void>run("INSERT INTO resume (uuid, full_name) VALUES (?, ?)",
                 ps -> {
-                    ps.setString(1, uuid);
+                    ps.setString(1, r.getUuid());
                     ps.setString(2, r.getFullName());
-                    return ps.executeUpdate();
+                    ps.execute();
+                    return null;
                 });
     }
 

@@ -1,6 +1,5 @@
 package ru.basejava.sql;
 
-import ru.basejava.exception.ExistStorageException;
 import ru.basejava.exception.StorageException;
 
 import java.sql.Connection;
@@ -10,7 +9,6 @@ import java.sql.SQLException;
 
 public class SqlHelper {
     private final ConnectionFactory connectionFactory;
-    private static final String ERR_UNIQUE_VIOLATION = "23505";
 
     public SqlHelper(String dbUrl, String dbUser, String dbPassword) {
         connectionFactory = () -> DriverManager.getConnection(dbUrl, dbUser, dbPassword);
@@ -26,11 +24,7 @@ public class SqlHelper {
              PreparedStatement ps = conn.prepareStatement(sql)) {
             return exec.execute(ps);
         } catch (SQLException e) {
-            if (e.getSQLState().equals(ERR_UNIQUE_VIOLATION)) {  //
-                throw new ExistStorageException(e);
-            } else {
-                throw new StorageException(e);
-            }
+            throw ExceptionUtil.convertException(e);
         }
     }
 }
