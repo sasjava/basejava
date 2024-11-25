@@ -6,6 +6,7 @@ import ru.basejava.Config;
 import ru.basejava.ResumeTestData;
 import ru.basejava.exception.ExistStorageException;
 import ru.basejava.exception.NotExistStorageException;
+import ru.basejava.model.ContactType;
 import ru.basejava.model.Resume;
 
 import java.io.File;
@@ -107,6 +108,7 @@ public abstract class AbstractStorageTest {
     @Test
     public final void update() {
         Resume resume = new Resume(R1.getUuid(), FNAME_NEW);
+        resume.addContact(ContactType.PHONE, "+7(999) 999-9999 new");
         storage.update(resume);
         assertEquals(resume, storage.get(resume.getUuid()));
     }

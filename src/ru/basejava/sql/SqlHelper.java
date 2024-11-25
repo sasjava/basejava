@@ -19,12 +19,33 @@ public class SqlHelper {
         T execute(PreparedStatement ps) throws SQLException;
     }
 
+    @FunctionalInterface
+    public interface ISqlTransaction<T> {
+        T execute(Connection conn) throws SQLException;
+    }
+
     public <T> T run(String sql, ISqlExec<T> exec) throws StorageException {
         try (Connection conn = connectionFactory.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             return exec.execute(ps);
         } catch (SQLException e) {
             throw ExceptionUtil.convertException(e);
+        }
+    }
+
+    public <T> T transactionalRun(ISqlTransaction<T> exec) {
+        try (Connection conn = connectionFactory.getConnection()) {
+            try {
+                conn.setAutoCommit(false);
+                T res = exec.execute(conn);
+                conn.commit();
+                return res;
+            } catch (SQLException e) {
+                conn.rollback();
+                throw ExceptionUtil.convertException(e);
+            }
+        } catch (SQLException e) {
+            throw new StorageException(e);
         }
     }
 }

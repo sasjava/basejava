@@ -71,14 +71,14 @@ public class ResumeTestData {
 
     public static Resume createResumeData(String uuid, String fullName) {
         Resume r = new Resume(uuid, fullName);
-//        r.addContact(ContactType.PHONE, "+7(921) 855-0482");
-//        r.addContact(ContactType.SKYPE, "skype:grigory.kislin");
-//        r.addContact(ContactType.MAIL, "gkislin@yandex.ru");
-//        r.addContact(ContactType.LINKEDIN, "https://www.linkedin.com/in/gkislin");
-//        r.addContact(ContactType.GITHUB, "https://github.com/gkislin");
-//        r.addContact(ContactType.STACKOVERFLOW, "https://stackoverflow.com/users/548473");
-//        r.addContact(ContactType.HOMEPAGE, "http://gkislin.ru/");
-//
+        r.addContact(ContactType.PHONE, "+7(921) 855-0482");
+        r.addContact(ContactType.SKYPE, "skype:grigory.kislin");
+        r.addContact(ContactType.MAIL, "gkislin@yandex.ru");
+        r.addContact(ContactType.LINKEDIN, "https://www.linkedin.com/in/gkislin");
+        r.addContact(ContactType.GITHUB, "https://github.com/gkislin");
+        r.addContact(ContactType.STACKOVERFLOW, "https://stackoverflow.com/users/548473");
+        r.addContact(ContactType.HOMEPAGE, "http://gkislin.ru/");
+
 //        addSections(r);
         return r;
     }
