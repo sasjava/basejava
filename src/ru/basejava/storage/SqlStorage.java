@@ -102,9 +102,7 @@ public class SqlStorage implements Storage {
                     "UPDATE resume SET full_name = ? WHERE uuid = ?")) {
                 ps.setString(1, r.getFullName());
                 ps.setString(2, uuid);
-                if (ps.executeUpdate() == 0) {
-                    throw new NotExistStorageException(uuid);
-                }
+                if (ps.executeUpdate() == 0) throw new NotExistStorageException(uuid);
             }
             try (PreparedStatement ps = conn.prepareStatement(
                     "DELETE FROM contact WHERE resume_uuid = ?")) {
