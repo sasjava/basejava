@@ -69,9 +69,7 @@ public class SqlStorage implements Storage {
                 ps -> {
                     ps.setString(1, uuid);
                     ResultSet rs = ps.executeQuery();
-                    if (!rs.next()) {
-                        throw new NotExistStorageException(uuid);
-                    }
+                    if (!rs.next()) throw new NotExistStorageException(uuid);
                     Resume r = new Resume(uuid, rs.getString("full_name"));
                     do {
                         String type = rs.getString("type");
@@ -125,9 +123,7 @@ public class SqlStorage implements Storage {
                     ps.setString(1, uuid);
                     return ps.executeUpdate();
                 });
-        if (rows == 0) {
-            throw new NotExistStorageException(uuid);
-        }
+        if (rows == 0) throw new NotExistStorageException(uuid);
     }
 
     private void insertContact(Resume r, Connection conn) throws SQLException {
