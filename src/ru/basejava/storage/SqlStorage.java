@@ -75,9 +75,7 @@ public class SqlStorage implements Storage {
                     Resume r = new Resume(uuid, rs.getString("full_name"));
                     do {
                         String type = rs.getString("type");
-                        if (type == null) {
-                            break;
-                        }
+                        if (type == null) break;
                         r.addContact(ContactType.valueOf(type), rs.getString("value"));
                     } while (rs.next());
                     return r;
