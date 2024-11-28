@@ -9,10 +9,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class SqlStorage implements Storage {
     private final SqlHelper sqlHelper;
@@ -38,38 +35,32 @@ public class SqlStorage implements Storage {
 
     @Override
     public List<Resume> getAllSorted() {
-        List<Resume> resumes = new ArrayList<>();
         return sqlHelper.transactionalRun(conn -> {
+            Map<String, Resume> resumesMap = new HashMap<>();
             try (PreparedStatement psR = conn.prepareStatement(
                     "SELECT uuid, full_name FROM resume ORDER BY full_name, uuid")) {
                 ResultSet rsR = psR.executeQuery();
-                try (PreparedStatement psC = conn.prepareStatement(
-                        "SELECT resume_uuid uuid, type, value FROM contact ORDER BY resume_uuid")) {
-                    ResultSet rsC = psC.executeQuery();
-                    Map<ContactType, String> contacts = new HashMap<>();
-                    Map<String, Map<ContactType, String>> contactsAll = new HashMap<>();
-                    while (rsC.next()) {
-                        String uuid = rsC.getString("uuid");
-                        ContactType type = ContactType.valueOf(rsC.getString("type"));
-                        String value = rsC.getString("value");
-                        if (contactsAll.put(uuid, null) == null) {
-                            contacts = new HashMap<>();
-                        }
-                        contacts.put(type, value);
-                        contactsAll.replace(uuid, contacts);
-                    }
-                    while (rsR.next()) {
-                        Resume r = new Resume(
-                                rsR.getString("uuid"),
-                                rsR.getString("full_name"));
-                        contacts = contactsAll.get(r.getUuid());
-                        for (Map.Entry<ContactType, String> e : contacts.entrySet()) {
-                            r.addContact(e.getKey(), e.getValue());
-                        }
-                        resumes.add(r);
-                    }
+                while (rsR.next()) {
+                    String uuid = rsR.getString("uuid");
+                    Resume r = new Resume(uuid, rsR.getString("full_name"));
+                    resumesMap.put(uuid, r);
                 }
             }
+            try (PreparedStatement psC = conn.prepareStatement(
+                    "SELECT resume_uuid uuid, type, value FROM contact ORDER BY resume_uuid")) {
+                ResultSet rsC = psC.executeQuery();
+                while (rsC.next()) {
+                    String uuid = rsC.getString("uuid");
+                    ContactType type = ContactType.valueOf(rsC.getString("type"));
+                    String value = rsC.getString("value");
+                    resumesMap.get(uuid).addContact(type, value);
+                }
+            }
+            List<Resume> resumes = new ArrayList<>();
+            for (Map.Entry<String, Resume> e : resumesMap.entrySet()) {
+                resumes.add(e.getValue());
+            }
+            Collections.sort(resumes);
             return resumes;
         });
     }
@@ -88,9 +79,13 @@ public class SqlStorage implements Storage {
                     }
                     Resume r = new Resume(uuid, rs.getString("full_name"));
                     do {
-                        r.addContact(
-                                ContactType.valueOf(rs.getString("type")),
-                                rs.getString("value"));
+                        try {
+                            r.addContact(
+                                    ContactType.valueOf(rs.getString("type")),
+                                    rs.getString("value"));
+                        } catch (NullPointerException e) {
+                            break;
+                        }
                     } while (rs.next());
                     return r;
                 });

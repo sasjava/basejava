@@ -11,6 +11,7 @@ import ru.basejava.model.Resume;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -25,7 +26,7 @@ public abstract class AbstractStorageTest {
     private static final String FNAME_3 = "A";
     private static final String FNAME_NEW = "New";
     private static final String DUMMY = "dummy";
-    private static final Resume R1  = ResumeTestData.createResumeData(String.valueOf(UUID.randomUUID()), FNAME_1);
+    private static final Resume R1 = ResumeTestData.createResumeData(String.valueOf(UUID.randomUUID()), FNAME_1);
     private static final Resume R2 = ResumeTestData.createResumeData(String.valueOf(UUID.randomUUID()), FNAME_2);
     private static final Resume R3 = ResumeTestData.createResumeData(String.valueOf(UUID.randomUUID()), FNAME_3);
     private static final Resume R_NEW = ResumeTestData.createResumeData(String.valueOf(UUID.randomUUID()), FNAME_NEW);
@@ -75,18 +76,14 @@ public abstract class AbstractStorageTest {
 
     @Test
     public final void getAllSorted() {
-        List<Resume> list = storage.getAllSorted();
-        assertEquals(storage.size(), list.size());
+        List<Resume> resumes = storage.getAllSorted();
+        assertEquals(storage.size(), resumes.size());
 
-        Resume[] resumes = list.toArray(new Resume[0]);
-        Resume[] expectedArr = {R3, R2, R1};
-        if (R1.getUuid().compareTo(R2.getUuid()) < 0) {
-            expectedArr[1] = R1;
-            expectedArr[2] = R2;
-        }
-        assertArrayEquals(expectedArr, resumes);
-        for (int i = 0; i < list.size(); i++) {
-            assertEquals(list.get(i), expectedArr[i]);
+        List<Resume> expectedResumes = Arrays.asList(R3, R2, R1);
+        Collections.sort(expectedResumes);
+        assertEquals(expectedResumes, resumes);
+        for (int i = 0; i < resumes.size(); i++) {
+            assertEquals(resumes.get(i), expectedResumes.get(i));
         }
     }
 
