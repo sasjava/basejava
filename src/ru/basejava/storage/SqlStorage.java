@@ -36,7 +36,7 @@ public class SqlStorage implements Storage {
     @Override
     public List<Resume> getAllSorted() {
         return sqlHelper.transactionalRun(conn -> {
-            Map<String, Resume> resumesMap = new HashMap<>();
+            Map<String, Resume> resumesMap = new LinkedHashMap<>();
             try (PreparedStatement psR = conn.prepareStatement(
                     "SELECT uuid, full_name FROM resume ORDER BY full_name, uuid")) {
                 ResultSet rsR = psR.executeQuery();
@@ -47,7 +47,7 @@ public class SqlStorage implements Storage {
                 }
             }
             try (PreparedStatement psC = conn.prepareStatement(
-                    "SELECT resume_uuid uuid, type, value FROM contact ORDER BY resume_uuid")) {
+                    "SELECT resume_uuid AS uuid, type, value FROM contact ORDER BY resume_uuid")) {
                 ResultSet rsC = psC.executeQuery();
                 while (rsC.next()) {
                     String uuid = rsC.getString("uuid");
@@ -56,12 +56,7 @@ public class SqlStorage implements Storage {
                     resumesMap.get(uuid).addContact(type, value);
                 }
             }
-            List<Resume> resumes = new ArrayList<>();
-            for (Map.Entry<String, Resume> e : resumesMap.entrySet()) {
-                resumes.add(e.getValue());
-            }
-            Collections.sort(resumes);
-            return resumes;
+            return resumesMap.values().stream().toList();
         });
     }
 
@@ -79,13 +74,11 @@ public class SqlStorage implements Storage {
                     }
                     Resume r = new Resume(uuid, rs.getString("full_name"));
                     do {
-                        try {
-                            r.addContact(
-                                    ContactType.valueOf(rs.getString("type")),
-                                    rs.getString("value"));
-                        } catch (NullPointerException e) {
+                        String type = rs.getString("type");
+                        if (type == null) {
                             break;
                         }
+                        r.addContact(ContactType.valueOf(type), rs.getString("value"));
                     } while (rs.next());
                     return r;
                 });
