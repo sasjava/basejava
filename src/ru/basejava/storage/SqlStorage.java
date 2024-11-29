@@ -51,9 +51,8 @@ public class SqlStorage implements Storage {
                 ResultSet rsC = psC.executeQuery();
                 while (rsC.next()) {
                     String uuid = rsC.getString("uuid");
-                    ContactType type = ContactType.valueOf(rsC.getString("type"));
-                    String value = rsC.getString("value");
-                    resumesMap.get(uuid).addContact(type, value);
+                    Resume r = resumesMap.get(uuid);
+                    addContactFromRS(r, rsC);
                 }
             }
             return resumesMap.values().stream().toList();
@@ -72,9 +71,7 @@ public class SqlStorage implements Storage {
                     if (!rs.next()) throw new NotExistStorageException(uuid);
                     Resume r = new Resume(uuid, rs.getString("full_name"));
                     do {
-                        String type = rs.getString("type");
-                        if (type == null) break;
-                        r.addContact(ContactType.valueOf(type), rs.getString("value"));
+                        addContactFromRS(r, rs);
                     } while (rs.next());
                     return r;
                 });
@@ -102,7 +99,9 @@ public class SqlStorage implements Storage {
                     "UPDATE resume SET full_name = ? WHERE uuid = ?")) {
                 ps.setString(1, r.getFullName());
                 ps.setString(2, uuid);
-                if (ps.executeUpdate() == 0) throw new NotExistStorageException(uuid);
+                if (ps.executeUpdate() == 0) {
+                    throw new NotExistStorageException(uuid);
+                }
             }
             try (PreparedStatement ps = conn.prepareStatement(
                     "DELETE FROM contact WHERE resume_uuid = ?")) {
@@ -121,7 +120,9 @@ public class SqlStorage implements Storage {
                     ps.setString(1, uuid);
                     return ps.executeUpdate();
                 });
-        if (rows == 0) throw new NotExistStorageException(uuid);
+        if (rows == 0) {
+            throw new NotExistStorageException(uuid);
+        }
     }
 
     private void insertContact(Resume r, Connection conn) throws SQLException {
@@ -134,6 +135,13 @@ public class SqlStorage implements Storage {
                 ps.addBatch();
             }
             ps.executeBatch();
+        }
+    }
+
+    private static void addContactFromRS(Resume r, ResultSet rs) throws SQLException {
+        String type = rs.getString("type");
+        if (type != null) {
+            r.addContact(ContactType.valueOf(type), rs.getString("value"));
         }
     }
 }
