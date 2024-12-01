@@ -23,8 +23,7 @@ public class SqlStorage implements Storage {
         return sqlHelper.run("SELECT count(*) FROM resume",
                 ps -> {
                     ResultSet rs = ps.executeQuery();
-                    rs.next();
-                    return rs.getInt(1);
+                    return rs.next() ? rs.getInt(1) : 0;
                 });
     }
 
@@ -104,7 +103,7 @@ public class SqlStorage implements Storage {
                 }
             }
             try (PreparedStatement ps = conn.prepareStatement(
-                    "DELETE FROM contact WHERE resume_uuid = ?")) {
+                    "DELETE  FROM contact WHERE resume_uuid = ?")) {
                 ps.setString(1, uuid);
                 ps.execute();
             }
