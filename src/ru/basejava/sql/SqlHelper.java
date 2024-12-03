@@ -48,4 +48,17 @@ public class SqlHelper {
             throw new StorageException(e);
         }
     }
+
+    public int execQueryByUuid(Connection conn, String uuid, String sql) throws SQLException {
+        return execQuery(conn, sql, ps -> {
+            ps.setString(1, uuid);
+            return ps.executeUpdate();
+        });
+    }
+
+    public <T> T execQuery(Connection conn, String sql, SqlHelper.ISqlExec<T> exec) throws SQLException {
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            return exec.execute(ps);
+        }
+    }
 }

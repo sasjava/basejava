@@ -2,7 +2,6 @@ package ru.basejava;
 
 import ru.basejava.model.*;
 
-import java.time.Month;
 import java.util.List;
 import java.util.Map;
 
@@ -79,7 +78,7 @@ public class ResumeTestData {
         r.addContact(ContactType.STACKOVERFLOW, "https://stackoverflow.com/users/548473");
         r.addContact(ContactType.HOMEPAGE, "http://gkislin.ru/");
 
-//        addSections(r);
+        addSections(r);
         return r;
     }
 
@@ -99,7 +98,7 @@ public class ResumeTestData {
         //QUALIFICATIONS("Квалификация")
         ListSection qualifications = new ListSection("Квалификация 1.", "Квалификация 2.");
         r.addSection(SectionType.QUALIFICATIONS, qualifications);
-
+/*
         //EXPERIENCE("Опыт работы")
         r.addSection(SectionType.EXPERIENCE,
                 new CompanySection(
@@ -130,5 +129,6 @@ public class ResumeTestData {
                         )
                 )
         );
+*/
     }
 }
