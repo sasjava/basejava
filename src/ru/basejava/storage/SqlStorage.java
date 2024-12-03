@@ -69,13 +69,13 @@ public class SqlStorage implements Storage {
     public void update(Resume r) {
         String uuid = r.getUuid();
         sqlHelper.transactionalRun(conn -> {
-            try (PreparedStatement ps = conn.prepareStatement(
-                    "UPDATE resume SET full_name = ? WHERE uuid = ?")) {
-                ps.setString(1, r.getFullName());
-                ps.setString(2, uuid);
-                if (ps.executeUpdate() == 0) {
-                    throw new NotExistStorageException(uuid);
-                }
+            if (sqlHelper.execQuery(conn, "UPDATE resume SET full_name = ? WHERE uuid = ?",
+                    ps -> {
+                        ps.setString(1, r.getFullName());
+                        ps.setString(2, uuid);
+                        return ps.executeUpdate();
+                    }) == 0) {
+                throw new NotExistStorageException(uuid);
             }
             sqlHelper.execQueryByUuid(conn, uuid, "DELETE FROM contact WHERE resume_uuid = ?");
             sqlHelper.execQueryByUuid(conn, uuid, "DELETE FROM section WHERE resume_uuid = ?");
