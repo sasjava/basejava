@@ -38,7 +38,7 @@ public class SqlStorage implements Storage {
 
     @Override
     public Resume get(String uuid) {
-        List<Resume> list = getWhere("WHERE uuid = '" + uuid + "'");
+        List<Resume> list = getWhere(uuid);
         if (list.size() == 0) {
             throw new NotExistStorageException(uuid);
         }
@@ -47,7 +47,7 @@ public class SqlStorage implements Storage {
 
     @Override
     public List<Resume> getAllSorted() {
-        return getWhere("WHERE uuid like '%'");
+        return getWhere();
     }
 
     @Override
@@ -95,11 +95,12 @@ public class SqlStorage implements Storage {
         });
     }
 
-    private List<Resume> getWhere(String where) {
+    private List<Resume> getWhere(String uuidPattern) {
         return sqlHelper.transactionalRun(conn -> {
             Map<String, Resume> resumesMap = new LinkedHashMap<>();
             try (PreparedStatement ps = conn.prepareStatement(
-                    "SELECT uuid, full_name FROM resume " + where + " ORDER BY full_name, uuid")) {
+                    "SELECT uuid, full_name FROM resume WHERE uuid like ? ORDER BY full_name, uuid")) {
+                ps.setString(1, uuidPattern);
                 ResultSet rs = ps.executeQuery();
                 while (rs.next()) {
                     String uuid = rs.getString("uuid");
@@ -107,28 +108,48 @@ public class SqlStorage implements Storage {
                     resumesMap.put(uuid, r);
                 }
             }
-            String whereResumeUuid = where.replace("uuid", "resume_uuid");
-            extractResumeData(conn, "SELECT resume_uuid AS uuid, type, value FROM contact " + whereResumeUuid + " ORDER BY resume_uuid",
-                    resumesMap, this::addContactFromRS);
-
-            extractResumeData(conn, "SELECT resume_uuid AS uuid, type, value FROM section " + whereResumeUuid + " ORDER BY resume_uuid",
-                    resumesMap, this::addSectionFromRS);
-
+            extractResumeData(conn, "SELECT resume_uuid AS uuid, type, value FROM contact WHERE resume_uuid like ? ORDER BY resume_uuid",
+                    uuidPattern, resumesMap, this::addContactFromRS);
+            extractResumeData(conn, "SELECT resume_uuid AS uuid, type, value FROM section WHERE resume_uuid like ? ORDER BY resume_uuid",
+                    uuidPattern, resumesMap, this::addSectionFromRS);
             return resumesMap.values().stream().toList();
         });
     }
 
+    private List<Resume> getWhere() {
+        return getWhere("%");
+    }
+
+    private void extractResumeData(Connection conn, String sql, String uuidPattern,
+                                   Map<String, Resume> resumesMap, IAction action) throws SQLException {
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, uuidPattern);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                String uuid = rs.getString("uuid");
+                Resume r = resumesMap.get(uuid);
+                action.add(r, rs);
+            }
+        }
+    }
+
     private void insertContact(Resume r, Connection conn) throws SQLException {
         sqlHelper.execQuery(conn, "INSERT INTO contact (resume_uuid, type, value) VALUES (?, ?, ?)",
-                ps -> execInsertContact(r, ps));
+                ps -> {
+                    execInsertContact(r, ps);
+                    return null;
+                });
     }
 
     private void insertSection(Resume r, Connection conn) throws SQLException {
         sqlHelper.execQuery(conn, "INSERT INTO section (resume_uuid, type, value) VALUES (?, ?, ?)",
-                ps -> execInsertSection(r, ps));
+                ps -> {
+                    execInsertSection(r, ps);
+                    return null;
+                });
     }
 
-    private int[] execInsertContact(Resume r, PreparedStatement ps) throws SQLException {
+    private void execInsertContact(Resume r, PreparedStatement ps) throws SQLException {
         for (Map.Entry<ContactType, String> e : r.getContacts().entrySet()) {
             ContactType cType = e.getKey();
             ps.setString(1, r.getUuid());
@@ -136,10 +157,10 @@ public class SqlStorage implements Storage {
             ps.setString(3, e.getValue());
             ps.addBatch();
         }
-        return ps.executeBatch();
+        ps.executeBatch();
     }
 
-    private int[] execInsertSection(Resume r, PreparedStatement ps) throws SQLException {
+    private void execInsertSection(Resume r, PreparedStatement ps) throws SQLException {
         for (Map.Entry<SectionType, AbstractSection> e : r.getSections().entrySet()) {
             SectionType sType = e.getKey();
             ps.setString(1, r.getUuid());
@@ -155,7 +176,7 @@ public class SqlStorage implements Storage {
             ps.setString(3, value);
             ps.addBatch();
         }
-        return ps.executeBatch();
+        ps.executeBatch();
     }
 
     private void addContactFromRS(Resume r, ResultSet rs) throws SQLException {
@@ -175,17 +196,6 @@ public class SqlStorage implements Storage {
                 case ACHIEVEMENT, QUALIFICATIONS -> r.addSection(sType,
                         new ListSection(Arrays.stream(value.split("\n")).toList()));//Достижения, Квалификация
                 default -> throw new IllegalStateException("Unexpected value: " + sType);
-            }
-        }
-    }
-
-    private void extractResumeData(Connection conn, String sql, Map<String, Resume> resumesMap, IAction action) throws SQLException {
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                String uuid = rs.getString("uuid");
-                Resume r = resumesMap.get(uuid);
-                action.add(r, rs);
             }
         }
     }
