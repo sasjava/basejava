@@ -18,6 +18,10 @@ public class SqlHelper {
     public interface ISqlExec<T> {
         T execute(PreparedStatement ps) throws SQLException;
     }
+    @FunctionalInterface
+    public interface IVoidSqlExec {
+        void execute(PreparedStatement ps) throws SQLException;
+    }
 
     @FunctionalInterface
     public interface ISqlTransaction<T> {
@@ -59,6 +63,11 @@ public class SqlHelper {
     public <T> T execQuery(Connection conn, String sql, SqlHelper.ISqlExec<T> exec) throws SQLException {
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             return exec.execute(ps);
+        }
+    }
+    public void execVoidQuery(Connection conn, String sql, SqlHelper.IVoidSqlExec exec) throws SQLException {
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            exec.execute(ps);
         }
     }
 }

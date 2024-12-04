@@ -53,11 +53,11 @@ public class SqlStorage implements Storage {
     @Override
     public void save(Resume r) {
         sqlHelper.transactionalRun(conn -> {
-            sqlHelper.execQuery(conn, "INSERT INTO resume (uuid, full_name) VALUES (?, ?)",
+            sqlHelper.execVoidQuery(conn, "INSERT INTO resume (uuid, full_name) VALUES (?, ?)",
                     ps -> {
                         ps.setString(1, r.getUuid());
                         ps.setString(2, r.getFullName());
-                        return ps.execute();
+                        ps.execute();
                     });
             insertContact(r, conn);
             insertSection(r, conn);
@@ -134,19 +134,13 @@ public class SqlStorage implements Storage {
     }
 
     private void insertContact(Resume r, Connection conn) throws SQLException {
-        sqlHelper.execQuery(conn, "INSERT INTO contact (resume_uuid, type, value) VALUES (?, ?, ?)",
-                ps -> {
-                    execInsertContact(r, ps);
-                    return null;
-                });
+        sqlHelper.execVoidQuery(conn, "INSERT INTO contact (resume_uuid, type, value) VALUES (?, ?, ?)",
+                ps -> execInsertContact(r, ps));
     }
 
     private void insertSection(Resume r, Connection conn) throws SQLException {
-        sqlHelper.execQuery(conn, "INSERT INTO section (resume_uuid, type, value) VALUES (?, ?, ?)",
-                ps -> {
-                    execInsertSection(r, ps);
-                    return null;
-                });
+        sqlHelper.execVoidQuery(conn, "INSERT INTO section (resume_uuid, type, value) VALUES (?, ?, ?)",
+                ps -> execInsertSection(r, ps));
     }
 
     private void execInsertContact(Resume r, PreparedStatement ps) throws SQLException {
