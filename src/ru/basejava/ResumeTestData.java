@@ -4,8 +4,20 @@ import ru.basejava.model.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 public class ResumeTestData {
+    public static final String FNAME_1 = "B";
+    public static final String FNAME_2 = "B";
+    public static final String FNAME_3 = "A";
+    public static final String FNAME_NEW = "New";
+    public static final String DUMMY = "dummy";
+    public static final Resume R1 = createResumeData(String.valueOf(UUID.randomUUID()), FNAME_1);
+    public static final Resume R2 = createResumeData(String.valueOf(UUID.randomUUID()), FNAME_2);
+    public static final Resume R3 = createResumeData(String.valueOf(UUID.randomUUID()), FNAME_3);
+    public static final Resume R_NEW = createResumeData(String.valueOf(UUID.randomUUID()), FNAME_NEW);
+    public static final Resume R_DUMMY = createResumeData("uuiddummy", DUMMY);
+
     public static void main(String[] args) {
         Resume r = createResumeData("uuid1", "Григорий Кислин");
 

@@ -18,10 +18,10 @@ public class MainCollection {
     private static final Resume RESUME4;
 
     static {
-        RESUME1 = new Resume(UUID_1, "–í–í–í");
-        RESUME2 = new Resume(UUID_2, "–ë–ë–ë");
-        RESUME3 = new Resume(UUID_3, "–í–í–í");
-        RESUME4 = new Resume(UUID_4, "–ê–ê–ê");
+        RESUME1 = new Resume(UUID_1, "¬¬¬");
+        RESUME2 = new Resume(UUID_2, "¡¡¡");
+        RESUME3 = new Resume(UUID_3, "¬¬¬");
+        RESUME4 = new Resume(UUID_4, "¿¿¿");
     }
 
     public static void main(String[] args) {

@@ -3,6 +3,7 @@ package ru.basejava.storage;
 import ru.basejava.exception.NotExistStorageException;
 import ru.basejava.model.*;
 import ru.basejava.sql.SqlHelper;
+import ru.basejava.util.JsonParser;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -59,8 +60,8 @@ public class SqlStorage implements Storage {
                         ps.setString(2, r.getFullName());
                         ps.execute();
                     });
-            insertContact(r, conn);
-            insertSection(r, conn);
+            insertContacts(r, conn);
+            insertSections(r, conn);
             return null;
         });
     }
@@ -79,8 +80,8 @@ public class SqlStorage implements Storage {
             }
             sqlHelper.execQueryByUuid(conn, uuid, "DELETE FROM contact WHERE resume_uuid = ?");
             sqlHelper.execQueryByUuid(conn, uuid, "DELETE FROM section WHERE resume_uuid = ?");
-            insertContact(r, conn);
-            insertSection(r, conn);
+            insertContacts(r, conn);
+            insertSections(r, conn);
             return null;
         });
     }
@@ -110,7 +111,7 @@ public class SqlStorage implements Storage {
             }
             extractResumeData(conn, "SELECT resume_uuid AS uuid, type, value FROM contact WHERE resume_uuid like ? ORDER BY resume_uuid",
                     uuidPattern, resumesMap, this::addContactFromRS);
-            extractResumeData(conn, "SELECT resume_uuid AS uuid, type, value FROM section WHERE resume_uuid like ? ORDER BY resume_uuid",
+            extractResumeData(conn, "SELECT resume_uuid AS uuid, type, content FROM section WHERE resume_uuid like ? ORDER BY resume_uuid",
                     uuidPattern, resumesMap, this::addSectionFromRS);
             return resumesMap.values().stream().toList();
         });
@@ -133,17 +134,17 @@ public class SqlStorage implements Storage {
         }
     }
 
-    private void insertContact(Resume r, Connection conn) throws SQLException {
+    private void insertContacts(Resume r, Connection conn) throws SQLException {
         sqlHelper.execVoidQuery(conn, "INSERT INTO contact (resume_uuid, type, value) VALUES (?, ?, ?)",
-                ps -> execInsertContact(r, ps));
+                ps -> execInsertContacts(r, ps));
     }
 
-    private void insertSection(Resume r, Connection conn) throws SQLException {
-        sqlHelper.execVoidQuery(conn, "INSERT INTO section (resume_uuid, type, value) VALUES (?, ?, ?)",
-                ps -> execInsertSection(r, ps));
+    private void insertSections(Resume r, Connection conn) throws SQLException {
+        sqlHelper.execVoidQuery(conn, "INSERT INTO section (resume_uuid, type, content) VALUES (?, ?, ?)",
+                ps -> execInsertSections(r, ps));
     }
 
-    private void execInsertContact(Resume r, PreparedStatement ps) throws SQLException {
+    private void execInsertContacts(Resume r, PreparedStatement ps) throws SQLException {
         for (Map.Entry<ContactType, String> e : r.getContacts().entrySet()) {
             ContactType cType = e.getKey();
             ps.setString(1, r.getUuid());
@@ -154,20 +155,22 @@ public class SqlStorage implements Storage {
         ps.executeBatch();
     }
 
-    private void execInsertSection(Resume r, PreparedStatement ps) throws SQLException {
+    private void execInsertSections(Resume r, PreparedStatement ps) throws SQLException {
         for (Map.Entry<SectionType, AbstractSection> e : r.getSections().entrySet()) {
             SectionType sType = e.getKey();
+            AbstractSection section = e.getValue();
             ps.setString(1, r.getUuid());
             ps.setString(2, sType.name());
-            String value;
-            switch (sType) {
-                case OBJECTIVE, PERSONAL ->
-                        value = ((TextSection) e.getValue()).getContent(); //Позиция, Личные качества
-                case ACHIEVEMENT, QUALIFICATIONS ->
-                        value = String.join("\n", ((ListSection) e.getValue()).getItems()); //Достижения, Квалификация
-                default -> throw new IllegalStateException("Unexpected value: " + sType);
-            }
-            ps.setString(3, value);
+            String content = JsonParser.write(section, AbstractSection.class);
+//            switch (sType) {
+//                case OBJECTIVE, PERSONAL ->
+//                        content = ((TextSection) e.getValue()).getContent(); //Позиция, Личные качества
+//                case ACHIEVEMENT, QUALIFICATIONS ->
+//                        content = String.join("\n", ((ListSection) e.getValue()).getItems()); //Достижения, Квалификация
+//                default -> throw new IllegalStateException("Unexpected value: " + sType);
+//            }
+            ps.setString(3, content);
+//            ps.setString(3, content);
             ps.addBatch();
         }
         ps.executeBatch();
@@ -175,22 +178,24 @@ public class SqlStorage implements Storage {
 
     private void addContactFromRS(Resume r, ResultSet rs) throws SQLException {
         String type = rs.getString("type");
-        if (type != null) {
-            r.addContact(ContactType.valueOf(type), rs.getString("value"));
+        String value = rs.getString("value");
+        if (type != null & value != null) {
+            r.addContact(ContactType.valueOf(type), value);
         }
     }
 
     private void addSectionFromRS(Resume r, ResultSet rs) throws SQLException {
         String type = rs.getString("type");
-        if (type != null) {
+        String content = rs.getString("content");
+        if (type != null & content != null) {
             SectionType sType = SectionType.valueOf(type);
-            String value = rs.getString("value");
-            switch (sType) {
-                case OBJECTIVE, PERSONAL -> r.addSection(sType, new TextSection(value));  //Позиция, Личные качества
-                case ACHIEVEMENT, QUALIFICATIONS -> r.addSection(sType,
-                        new ListSection(Arrays.stream(value.split("\n")).toList()));//Достижения, Квалификация
-                default -> throw new IllegalStateException("Unexpected value: " + sType);
-            }
+            r.addSection(sType, JsonParser.read(content, AbstractSection.class));
+//            switch (sType) {
+//                case OBJECTIVE, PERSONAL -> r.addSection(sType, new TextSection(content));  //Позиция, Личные качества
+//                case ACHIEVEMENT, QUALIFICATIONS -> r.addSection(sType,
+//                        new ListSection(Arrays.stream(content.split("\n")).toList()));//Достижения, Квалификация
+//                default -> throw new IllegalStateException("Unexpected value: " + sType);
+//            }
         }
     }
 }

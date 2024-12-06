@@ -42,7 +42,7 @@ public class ResumeServlet extends HttpServlet {
         String id = request.getParameter("uuid");
         if (id == null) {
             w.write("<h2>Resumes</h2></head><body>");
-            w.write("<table border=1><th>uuid</th><th>name</th>");
+            w.write("<table border=1 cellpadding=8 cellspacing=0><th>uuid</th><th>name</th>");
             List<Resume> resumes = storage.getAllSorted();
             for (Resume r : resumes) {
                 String uuid = r.getUuid();
@@ -51,7 +51,7 @@ public class ResumeServlet extends HttpServlet {
         } else {
             w.write("<head><h3>Resume</h3></head><body>");
             w.write("<p><a href=\"javascript:history.back()\"><-- Назад</a></p>");
-            w.write("<table border=1><th>id</th><th>name</th>");
+            w.write("<table border=1 cellpadding=8 cellspacing=0><th>id</th><th>name</th>");
             Resume r = storage.get(id);
             w.write("<tr><td>" + r.getUuid() + "</td><td>" + r.getFullName() + "</td></tr>");
         }

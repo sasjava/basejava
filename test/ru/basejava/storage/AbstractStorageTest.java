@@ -3,7 +3,6 @@ package ru.basejava.storage;
 import org.junit.Before;
 import org.junit.Test;
 import ru.basejava.Config;
-import ru.basejava.ResumeTestData;
 import ru.basejava.exception.ExistStorageException;
 import ru.basejava.exception.NotExistStorageException;
 import ru.basejava.model.ContactType;
@@ -13,24 +12,24 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static ru.basejava.ResumeTestData.*;
 
 public abstract class AbstractStorageTest {
     protected static final File STORAGE_DIR = Config.get().getStorageDir();
     protected Storage storage;
-    private static final String FNAME_1 = "B";
-    private static final String FNAME_2 = "B";
-    private static final String FNAME_3 = "A";
-    private static final String FNAME_NEW = "New";
-    private static final String DUMMY = "dummy";
-    private static final Resume R1 = ResumeTestData.createResumeData(String.valueOf(UUID.randomUUID()), FNAME_1);
-    private static final Resume R2 = ResumeTestData.createResumeData(String.valueOf(UUID.randomUUID()), FNAME_2);
-    private static final Resume R3 = ResumeTestData.createResumeData(String.valueOf(UUID.randomUUID()), FNAME_3);
-    private static final Resume R_NEW = ResumeTestData.createResumeData(String.valueOf(UUID.randomUUID()), FNAME_NEW);
-    private static final Resume R_DUMMY = ResumeTestData.createResumeData("uuiddummy", DUMMY);
+//    private static final String FNAME_1 = "B";
+//    private static final String FNAME_2 = "B";
+//    private static final String FNAME_3 = "A";
+//    private static final String FNAME_NEW = "New";
+//    private static final String DUMMY = "dummy";
+//    private static final Resume R1 = ResumeTestData.createResumeData(String.valueOf(UUID.randomUUID()), FNAME_1);
+//    private static final Resume R2 = ResumeTestData.createResumeData(String.valueOf(UUID.randomUUID()), FNAME_2);
+//    private static final Resume R3 = ResumeTestData.createResumeData(String.valueOf(UUID.randomUUID()), FNAME_3);
+//    private static final Resume R_NEW = ResumeTestData.createResumeData(String.valueOf(UUID.randomUUID()), FNAME_NEW);
+//    private static final Resume R_DUMMY = ResumeTestData.createResumeData("uuiddummy", DUMMY);
 
     public AbstractStorageTest() {
         this.storage = new ArrayStorage();
