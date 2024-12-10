@@ -2,15 +2,16 @@ package ru.basejava;
 
 import ru.basejava.model.*;
 
+import java.time.Month;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 public class ResumeTestData {
-    public static final String FNAME_1 = "B";
-    public static final String FNAME_2 = "B";
-    public static final String FNAME_3 = "A";
-    public static final String FNAME_NEW = "New";
+    public static final String FNAME_1 = "Иван";
+    public static final String FNAME_2 = "Мария";
+    public static final String FNAME_3 = "Александр";
+    public static final String FNAME_NEW = "Новый";
     public static final String DUMMY = "dummy";
     public static final Resume R1 = createResumeData(String.valueOf(UUID.randomUUID()), FNAME_1);
     public static final Resume R2 = createResumeData(String.valueOf(UUID.randomUUID()), FNAME_2);
@@ -82,14 +83,44 @@ public class ResumeTestData {
 
     public static Resume createResumeData(String uuid, String fullName) {
         Resume r = new Resume(uuid, fullName);
-        r.addContact(ContactType.PHONE, "+7(921) 855-0482");
-        r.addContact(ContactType.SKYPE, "skype:grigory.kislin");
-        r.addContact(ContactType.MAIL, "gkislin@yandex.ru");
-        r.addContact(ContactType.LINKEDIN, "https://www.linkedin.com/in/gkislin");
-        r.addContact(ContactType.GITHUB, "https://github.com/gkislin");
-        r.addContact(ContactType.STACKOVERFLOW, "https://stackoverflow.com/users/548473");
-        r.addContact(ContactType.HOMEPAGE, "http://gkislin.ru/");
-
+        switch (fullName) {
+            case FNAME_1 -> {
+                r.addContact(ContactType.PHONE, "+7(921) 111-1234");
+                r.addContact(ContactType.SKYPE, "ivan.nn");
+                r.addContact(ContactType.MAIL, "ivan@yandex.ru");
+                r.addContact(ContactType.LINKEDIN, "https://www.linkedin.com/in/ivan");
+                r.addContact(ContactType.GITHUB, "https://github.com/ivan");
+                r.addContact(ContactType.STACKOVERFLOW, "https://stackoverflow.com/users/112233");
+                r.addContact(ContactType.HOMEPAGE, "http://ivan.ru/");
+            }
+            case FNAME_2 -> {
+                r.addContact(ContactType.PHONE, "+7(921) 222-0077");
+                r.addContact(ContactType.SKYPE, "mar.ia");
+                r.addContact(ContactType.MAIL, "maria@yandex.ru");
+                r.addContact(ContactType.LINKEDIN, "https://www.linkedin.com/in/maria");
+                r.addContact(ContactType.GITHUB, "https://github.com/maria");
+                r.addContact(ContactType.STACKOVERFLOW, "https://stackoverflow.com/users/558877");
+                r.addContact(ContactType.HOMEPAGE, "http://maria.ru/");
+            }
+            case FNAME_3 -> {
+                r.addContact(ContactType.PHONE, "+7(999) 999-0112");
+                r.addContact(ContactType.SKYPE, "alex.andr");
+                r.addContact(ContactType.MAIL, "alexandr@yandex.ru");
+                r.addContact(ContactType.LINKEDIN, "https://www.linkedin.com/in/alexandr");
+                r.addContact(ContactType.GITHUB, "https://github.com/alexandr");
+                r.addContact(ContactType.STACKOVERFLOW, "https://stackoverflow.com/users/338422");
+                r.addContact(ContactType.HOMEPAGE, "http://alexandr.ru/");
+            }
+            default -> {
+                r.addContact(ContactType.PHONE, "+7(999) 000-1111");
+                r.addContact(ContactType.SKYPE, "new.name");
+                r.addContact(ContactType.MAIL, "newname@yandex.ru");
+                r.addContact(ContactType.LINKEDIN, "https://www.linkedin.com/in/newname");
+                r.addContact(ContactType.GITHUB, "https://github.com/newname");
+                r.addContact(ContactType.STACKOVERFLOW, "https://stackoverflow.com/users/001122");
+                r.addContact(ContactType.HOMEPAGE, "http://newname.ru/");
+            }
+        }
         addSections(r);
         return r;
     }
@@ -110,7 +141,7 @@ public class ResumeTestData {
         //QUALIFICATIONS("Квалификация")
         ListSection qualifications = new ListSection("Квалификация 1.", "Квалификация 2.");
         r.addSection(SectionType.QUALIFICATIONS, qualifications);
-/*
+
         //EXPERIENCE("Опыт работы")
         r.addSection(SectionType.EXPERIENCE,
                 new CompanySection(
@@ -141,6 +172,5 @@ public class ResumeTestData {
                         )
                 )
         );
-*/
     }
 }

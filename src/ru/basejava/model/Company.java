@@ -115,6 +115,14 @@ public class Company implements Serializable {
             return description;
         }
 
+        public String getMonthYear(LocalDate d) {
+            return d.getMonthValue() + "/" + d.getYear();
+        }
+
+        public String getPeriodMonthYear() {
+            return getMonthYear(beginDate) + " - " + getMonthYear(endDate);
+        }
+
         @Override
         public String toString() {
             return "Period{" + beginDate + endDate + title + description + '}';

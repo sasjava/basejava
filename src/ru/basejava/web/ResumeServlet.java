@@ -1,7 +1,8 @@
 package ru.basejava.web;
 
 import ru.basejava.Config;
-import ru.basejava.model.Resume;
+import ru.basejava.exception.NotExistStorageException;
+import ru.basejava.model.*;
 import ru.basejava.storage.Storage;
 
 import javax.servlet.ServletConfig;
@@ -10,8 +11,10 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.Writer;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import static java.util.Arrays.stream;
 
 public class ResumeServlet extends HttpServlet {
     private final Storage storage = Config.get().getStorage();
@@ -28,38 +31,121 @@ public class ResumeServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        final String CS = "UTF-8";
-        request.setCharacterEncoding(CS);
-        response.setCharacterEncoding(CS);
-        response.setContentType("text/html; charset=" + CS);
-
-        Writer w = response.getWriter();
-//        String name = request.getParameter("name");
-//        w.write(name == null ? "Привет!!!" : "Hello," + name + "!");
-
-        w.write("<html>");
-        w.write("<head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=" + CS + "\">");
-        String id = request.getParameter("uuid");
-        if (id == null) {
-            w.write("<h2>Resumes</h2></head><body>");
-            w.write("<table border=1 cellpadding=8 cellspacing=0><th>uuid</th><th>name</th>");
-            List<Resume> resumes = storage.getAllSorted();
-            for (Resume r : resumes) {
-                String uuid = r.getUuid();
-                w.write("<tr><td><a href =/resumes/resume?uuid=" + uuid + ">" + uuid + "</a></td><td>" + r.getFullName() + "</td></tr>");
-            }
-        } else {
-            w.write("<head><h3>Resume</h3></head><body>");
-            w.write("<p><a href=\"javascript:history.back()\"><-- Назад</a></p>");
-            w.write("<table border=1 cellpadding=8 cellspacing=0><th>id</th><th>name</th>");
-            Resume r = storage.get(id);
-            w.write("<tr><td>" + r.getUuid() + "</td><td>" + r.getFullName() + "</td></tr>");
+        request.setCharacterEncoding("UTF-8");
+        response.setCharacterEncoding("UTF-8");
+        response.setContentType("text/html; charset=UTF-8");
+        String uuid = request.getParameter("uuid");
+        String action = request.getParameter("action");
+        if (action == null) {
+            request.setAttribute("resumes", storage.getAllSorted());
+            request.getRequestDispatcher("/WEB-INF/jsp/list.jsp").forward(request, response);
+            return;
         }
-        w.write("</table></body></html>");
+        Resume r = null;
+        switch (action) {
+            case "delete" -> {
+                storage.delete(uuid);
+                response.sendRedirect("resume");
+                return;
+            }
+            case "view", "edit" -> r = storage.get(uuid);
+            case "add" -> r = new Resume("");
+            default -> throw new IllegalArgumentException("Action " + action + " is illegal");
+        }
+        request.setAttribute("resume", r);
+        request.setAttribute("action", action);
+        request.getRequestDispatcher(
+                "view".equals(action) ? "/WEB-INF/jsp/view.jsp" : "/WEB-INF/jsp/edit.jsp"
+        ).forward(request, response);
     }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        request.setCharacterEncoding("UTF-8");
+        doPost(request);
+        response.sendRedirect("resume");
+    }
 
+    private void doPost(HttpServletRequest request) {
+        String uuid = request.getParameter("uuid");
+        String fullName = condense(request.getParameter("fullName"));
+        if (fullName.length() == 0) {
+            return;
+        }
+        Resume r;
+        boolean isNew = false;
+        try {
+            r = storage.get(uuid);
+        } catch (NotExistStorageException e) {
+            r = new Resume(uuid, fullName);
+            isNew = true;
+        }
+        r.setFullName(fullName);
+        setContacts(r, request);
+        setSections(r, request);
+
+        if (isNew) {
+            storage.save(r);
+        } else {
+            storage.update(r);
+        }
+    }
+
+    private void setContacts(Resume r, HttpServletRequest request) {
+        for (ContactType type : ContactType.values()) {
+            String value = condense(request.getParameter(type.name()));
+            if (value.length() != 0) {
+                r.addContact(type, value);
+            } else {
+                r.getContacts().remove(type);
+            }
+        }
+    }
+
+    private void setSections(Resume r, HttpServletRequest request) {
+        for (SectionType type : SectionType.values()) {
+            String sectionName = type.name();
+            String content = trim(request.getParameter(sectionName));
+
+            if (content.length() != 0) {
+                switch (sectionName) {
+                    case "OBJECTIVE", "PERSONAL" -> {
+                        content = condense(content);
+                        if (content.length() != 0) {
+                            r.addSection(type, new TextSection(content));
+                            continue;
+                        }
+                    }
+                    case "ACHIEVEMENT", "QUALIFICATIONS" -> {
+                        List<String> list = getList(content);
+                        if (list.size() > 0) {
+                            r.addSection(type, new ListSection(list));
+                            continue;
+                        }
+                    }
+                    case "EXPERIENCE", "EDUCATION" -> {
+                        continue;
+                    }
+                }
+            }
+            r.getSections().remove(type);
+        }
+    }
+
+    private String trim(String value) {
+        return value == null ? "" : value.trim();
+    }
+
+    private String condense(String value) {
+        String result = trim(value).replaceAll("[\r\n]", "")
+                .replaceAll("\s+", " ");
+        return result == " " ? "" : result;
+    }
+
+    private List<String> getList(String value) {
+        return stream(value.split("\n"))
+                .map(this::condense)
+                .filter(item -> item.length() > 0)
+                .collect(Collectors.toList());
     }
 }

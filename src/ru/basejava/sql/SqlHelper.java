@@ -6,18 +6,30 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.Properties;
 
 public class SqlHelper {
     private final ConnectionFactory connectionFactory;
 
     public SqlHelper(String dbUrl, String dbUser, String dbPassword) {
-        connectionFactory = () -> DriverManager.getConnection(dbUrl, dbUser, dbPassword);
+        try {
+            Class.forName("org.postgresql.Driver");
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+        Properties info = new Properties();
+        info.setProperty("user", dbUser);
+        info.setProperty("password", dbPassword);
+        info.setProperty("useUnicode", "true");
+        info.setProperty("characterEncoding", "utf8");
+        connectionFactory = () -> DriverManager.getConnection(dbUrl, info);
     }
 
     @FunctionalInterface
     public interface ISqlExec<T> {
         T execute(PreparedStatement ps) throws SQLException;
     }
+
     @FunctionalInterface
     public interface IVoidSqlExec {
         void execute(PreparedStatement ps) throws SQLException;
@@ -65,6 +77,7 @@ public class SqlHelper {
             return exec.execute(ps);
         }
     }
+
     public void execVoidQuery(Connection conn, String sql, SqlHelper.IVoidSqlExec exec) throws SQLException {
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             exec.execute(ps);

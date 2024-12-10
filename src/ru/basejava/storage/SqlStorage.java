@@ -164,9 +164,9 @@ public class SqlStorage implements Storage {
             String content = JsonParser.write(section, AbstractSection.class);
 //            switch (sType) {
 //                case OBJECTIVE, PERSONAL ->
-//                        content = ((TextSection) e.getValue()).getContent(); //Ïîçèöèÿ, Ëè÷íûå êà÷åñòâà
+//                        content = ((TextSection) e.getValue()).getContent(); //ÐŸÐ¾Ð·Ð¸Ñ†Ð¸Ñ, Ð›Ð¸Ñ‡Ð½Ñ‹Ðµ ÐºÐ°Ñ‡ÐµÑÑ‚Ð²Ð°
 //                case ACHIEVEMENT, QUALIFICATIONS ->
-//                        content = String.join("\n", ((ListSection) e.getValue()).getItems()); //Äîñòèæåíèÿ, Êâàëèôèêàöèÿ
+//                        content = String.join("\n", ((ListSection) e.getValue()).getItems()); //Ð”Ð¾ÑÑ‚Ð¸Ð¶ÐµÐ½Ð¸Ñ, ÐšÐ²Ð°Ð»Ð¸Ñ„Ð¸ÐºÐ°Ñ†Ð¸Ñ
 //                default -> throw new IllegalStateException("Unexpected value: " + sType);
 //            }
             ps.setString(3, content);
@@ -191,9 +191,9 @@ public class SqlStorage implements Storage {
             SectionType sType = SectionType.valueOf(type);
             r.addSection(sType, JsonParser.read(content, AbstractSection.class));
 //            switch (sType) {
-//                case OBJECTIVE, PERSONAL -> r.addSection(sType, new TextSection(content));  //Ïîçèöèÿ, Ëè÷íûå êà÷åñòâà
+//                case OBJECTIVE, PERSONAL -> r.addSection(sType, new TextSection(content));  //ÐŸÐ¾Ð·Ð¸Ñ†Ð¸Ñ, Ð›Ð¸Ñ‡Ð½Ñ‹Ðµ ÐºÐ°Ñ‡ÐµÑÑ‚Ð²Ð°
 //                case ACHIEVEMENT, QUALIFICATIONS -> r.addSection(sType,
-//                        new ListSection(Arrays.stream(content.split("\n")).toList()));//Äîñòèæåíèÿ, Êâàëèôèêàöèÿ
+//                        new ListSection(Arrays.stream(content.split("\n")).toList()));//Ð”Ð¾ÑÑ‚Ð¸Ð¶ÐµÐ½Ð¸Ñ, ÐšÐ²Ð°Ð»Ð¸Ñ„Ð¸ÐºÐ°Ñ†Ð¸Ñ
 //                default -> throw new IllegalStateException("Unexpected value: " + sType);
 //            }
         }
