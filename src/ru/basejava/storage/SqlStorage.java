@@ -1,7 +1,10 @@
 package ru.basejava.storage;
 
 import ru.basejava.exception.NotExistStorageException;
-import ru.basejava.model.*;
+import ru.basejava.model.AbstractSection;
+import ru.basejava.model.ContactType;
+import ru.basejava.model.Resume;
+import ru.basejava.model.SectionType;
 import ru.basejava.sql.SqlHelper;
 import ru.basejava.util.JsonParser;
 
@@ -9,7 +12,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 public class SqlStorage implements Storage {
     private final SqlHelper sqlHelper;
@@ -189,7 +194,11 @@ public class SqlStorage implements Storage {
         String content = rs.getString("content");
         if (type != null & content != null) {
             SectionType sType = SectionType.valueOf(type);
-            r.addSection(sType, JsonParser.read(content, AbstractSection.class));
+            try {
+                r.addSection(sType, JsonParser.read(content, AbstractSection.class));
+            } catch (RuntimeException e) {
+                return;
+            }
 //            switch (sType) {
 //                case OBJECTIVE, PERSONAL -> r.addSection(sType, new TextSection(content));  //Позиция, Личные качества
 //                case ACHIEVEMENT, QUALIFICATIONS -> r.addSection(sType,

@@ -10,6 +10,7 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.Month;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -121,7 +122,7 @@ public class Company implements Serializable {
         }
 
         public String dateAsMMYYYY(LocalDate d) {
-            return d.format(DateTimeFormatter.ofPattern("MM/yyyy"));
+            return d.getYear() <= 1 ? "" : d.format(DateTimeFormatter.ofPattern("MM/yyyy"));
         }
 
         public String getPeriodMonthYear() {
@@ -150,7 +151,11 @@ public class Company implements Serializable {
         }
 
         private static LocalDate getDateFromMMYYYY(String mmyyyy) {
-            return parse(mmyyyy + "/01", DateTimeFormatter.ofPattern("MM/yyyy/dd"));
+            try {
+                return parse(mmyyyy + "/01", DateTimeFormatter.ofPattern("MM/yyyy/dd"));
+            } catch (DateTimeParseException e) {
+                return LocalDate.of(0,1,1);
+            }
         }
     }
 }
