@@ -1,7 +1,6 @@
 package ru.basejava.web;
 
 import ru.basejava.Config;
-import ru.basejava.exception.NotExistStorageException;
 import ru.basejava.model.*;
 import ru.basejava.storage.Storage;
 
@@ -11,6 +10,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -49,7 +49,7 @@ public class ResumeServlet extends HttpServlet {
                 return;
             }
             case "view", "edit" -> r = storage.get(uuid);
-            case "add" -> r = new Resume("");
+            case "add" -> r = new Resume();
             default -> throw new IllegalArgumentException("Action " + action + " is illegal");
         }
         request.setAttribute("resume", r);
@@ -72,19 +72,12 @@ public class ResumeServlet extends HttpServlet {
         if (fullName.length() == 0) {
             return;
         }
-        Resume r;
-        boolean isNew = false;
-        try {
-            r = storage.get(uuid);
-        } catch (NotExistStorageException e) {
-            r = new Resume(uuid, fullName);
-            isNew = true;
-        }
+        Resume r = uuid.isEmpty() ? new Resume(fullName) : storage.get(uuid);
         r.setFullName(fullName);
         setContacts(r, request);
         setSections(r, request);
 
-        if (isNew) {
+        if (uuid.isEmpty()) {
             storage.save(r);
         } else {
             storage.update(r);
@@ -103,32 +96,48 @@ public class ResumeServlet extends HttpServlet {
     }
 
     private void setSections(Resume r, HttpServletRequest request) {
-        for (SectionType type : SectionType.values()) {
-            String sectionName = type.name();
+        for (SectionType sectionType : SectionType.values()) {
+            String sectionName = sectionType.name();
             String content = trim(request.getParameter(sectionName));
 
             if (content.length() != 0) {
-                switch (sectionName) {
-                    case "OBJECTIVE", "PERSONAL" -> {
+                switch (sectionType) {
+                    case OBJECTIVE, PERSONAL -> {
                         content = condense(content);
                         if (content.length() != 0) {
-                            r.addSection(type, new TextSection(content));
+                            r.addSection(sectionType, new TextSection(content));
                             continue;
                         }
                     }
-                    case "ACHIEVEMENT", "QUALIFICATIONS" -> {
+                    case ACHIEVEMENT, QUALIFICATIONS -> {
                         List<String> list = getList(content);
                         if (list.size() > 0) {
-                            r.addSection(type, new ListSection(list));
+                            r.addSection(sectionType, new ListSection(list));
                             continue;
                         }
                     }
-                    case "EXPERIENCE", "EDUCATION" -> {
+                    case EXPERIENCE, EDUCATION -> {
+                        String[] contentName = request.getParameterValues(sectionName);
+                        String[] contentUrl = request.getParameterValues(sectionName + "url");
+                        String[] contentStart = request.getParameterValues(sectionName + "start");
+                        String[] contentEnd = request.getParameterValues(sectionName + "end");
+                        String[] contentTitle = request.getParameterValues(sectionName + "title");
+                        String[] contentDescr = request.getParameterValues(sectionName + "descr");
+                        List<Company> companies = new ArrayList<>();
+                        for (int i = 0; i < contentName.length; i++) {
+                            String companyName = condense(contentName[i]);
+                            if (!companyName.isEmpty()) {
+                                Company.Period period = new Company.Period(contentStart[i], contentEnd[i], contentTitle[i], contentDescr[i]);
+                                Company company = new Company(companyName, contentUrl[i], period);
+                                companies.add(company);
+                            }
+                        }
+                        r.addSection(sectionType, new CompanySection(companies));
                         continue;
                     }
                 }
             }
-            r.getSections().remove(type);
+            r.getSections().remove(sectionType);
         }
     }
 
@@ -139,7 +148,7 @@ public class ResumeServlet extends HttpServlet {
     private String condense(String value) {
         String result = trim(value).replaceAll("[\r\n]", "")
                 .replaceAll("\s+", " ");
-        return result == " " ? "" : result;
+        return result.equals(" ") ? "" : result;
     }
 
     private List<String> getList(String value) {

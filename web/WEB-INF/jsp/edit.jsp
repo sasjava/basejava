@@ -25,7 +25,8 @@
                 </div>
                 <dl>
                     <dt><h3>Имя</h3></dt>
-                    <dd><input class="field" type="text" name="fullName" placeholder="ФИО" size=50 value="${resume.fullName}"></dd>
+                    <dd><input class="field" type="text" name="fullName" placeholder="ФИО" size=50
+                               value="${resume.fullName}" required></dd>
                 </dl>
                 <%-- <h3>Контакты:</h3>--%>
                 <c:forEach var="type" items="<%=ContactType.values()%>">
@@ -42,7 +43,6 @@
                         <jsp:param name="stype" value="${type.name()}"/>
                     </jsp:include>
                 </c:forEach>
-                <div class="spacer"></div>
             </div>
         </div>
     </form>

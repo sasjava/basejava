@@ -18,6 +18,10 @@
         case "QUALIFICATIONS": {
             resume.addSection(sectionType, new ListSection(""));
             break; }
+        case "EXPERIENCE":
+        case "EDUCATION": {
+            resume.addSection(sectionType, new CompanySection());
+            break; }
         default: return;
     }%>
     <c:set var="section" value="${resume.getSection(stype)}"/>
@@ -39,22 +43,30 @@
             <c:when test="${stype==\"EXPERIENCE\"||stype==\"EDUCATION\"}">
                 <%request.setAttribute("companies", ((CompanySection) section).getCompanies());%>
                 <c:forEach var="company" items="${companies}">
-                    <p>
-                    <input class="field" type="text" name="${stype}" placeholder="Название компании" value="${company.name}">
-                    <input class="field" type="text" name="${stype}+url" placeholder="Ссылка" value="${company.url}">
+                    <jsp:include page="company_edit.jsp">
+                        <jsp:param name="name" value="${company.name}"/>
+                        <jsp:param name="url" value="${company.url}"/>
+                    </jsp:include>
                     <c:forEach var="period" items="${company.periods}">
-                        <div class="date-section">
-                            <input class="field date" name="${stype}+startDate" placeholder="Начало, ММ/ГГГГ" value="${period.getMonthYear(period.beginDate)}">
-                            <input class="field date date-margin" name="${stype}+endDate" placeholder="Окончание, ММ/ГГГГ" value="${period.getMonthYear(period.endDate)}">
-                        </div>
-                        <input class="field" type="text" name="${stype}title" placeholder="Заголовок" value="${period.title}">
-                        <textarea class="field" type="text" name="${stype}descr" placeholder="Описание">${period.description}</textarea>
-                        <br>
+                        <jsp:include page="company_period_edit.jsp">
+                            <jsp:param name="start" value="${period.dateAsMMYYYY(period.beginDate)}"/>
+                            <jsp:param name="end" value="${period.dateAsMMYYYY(period.endDate)}"/>
+                            <jsp:param name="title" value="${period.title}"/>
+                            <jsp:param name="description" value="${period.description}"/>
+                        </jsp:include>
                     </c:forEach>
-                    <br>
-                    </p>
-                </c:forEach>
-<%--                <textarea><%%></textarea>--%>
+                    <div class="spacer"></div>
+                </c:forEach><br>
+                <jsp:include page="company_edit.jsp">
+                    <jsp:param name="name" value=""/>
+                    <jsp:param name="url" value=""/>
+                </jsp:include>
+                <jsp:include page="company_period_edit.jsp">
+                    <jsp:param name="start" value=""/>
+                    <jsp:param name="end" value=""/>
+                    <jsp:param name="title" value=""/>
+                    <jsp:param name="description" value=""/>
+                </jsp:include>
             </c:when>
         </c:choose>
     </c:when>
@@ -90,5 +102,4 @@
         </c:choose>
     </c:otherwise>
 </c:choose>
-</h3>
 

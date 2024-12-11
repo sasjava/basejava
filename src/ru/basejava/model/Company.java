@@ -9,10 +9,12 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.Month;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
+import static java.time.LocalDate.parse;
 import static java.time.YearMonth.of;
 
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -91,9 +93,12 @@ public class Company implements Serializable {
             this(of(beginYear, beginMonth).atDay(1), of(endYear, endMonth).atEndOfMonth(), title, description);
         }
 
-        public Period(int beginYear, Month beginMonth,
-                      String title, String description) {
+        public Period(int beginYear, Month beginMonth, String title, String description) {
             this(of(beginYear, beginMonth).atDay(1), LocalDate.now(), title, description);
+        }
+
+        public Period(String mmyyyyBegin, String mmyyyyEnd, String title, String description) {
+            this(getDateFromMMYYYY(mmyyyyBegin), getDateFromMMYYYY(mmyyyyEnd), title, description);
         }
 
         public Period() {
@@ -115,12 +120,12 @@ public class Company implements Serializable {
             return description;
         }
 
-        public String getMonthYear(LocalDate d) {
-            return d.getMonthValue() + "/" + d.getYear();
+        public String dateAsMMYYYY(LocalDate d) {
+            return d.format(DateTimeFormatter.ofPattern("MM/yyyy"));
         }
 
         public String getPeriodMonthYear() {
-            return getMonthYear(beginDate) + " - " + getMonthYear(endDate);
+            return dateAsMMYYYY(beginDate) + " - " + dateAsMMYYYY(endDate);
         }
 
         @Override
@@ -142,6 +147,10 @@ public class Company implements Serializable {
         @Override
         public int hashCode() {
             return Objects.hash(beginDate, endDate, title, description);
+        }
+
+        private static LocalDate getDateFromMMYYYY(String mmyyyy) {
+            return parse(mmyyyy + "/01", DateTimeFormatter.ofPattern("MM/yyyy/dd"));
         }
     }
 }
