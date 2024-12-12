@@ -42,10 +42,13 @@
             </c:when>
             <c:when test="${stype==\"EXPERIENCE\"||stype==\"EDUCATION\"}">
                 <%request.setAttribute("companies", ((CompanySection) section).getCompanies());%>
+                <%int num = 0;%>
                 <c:forEach var="company" items="${companies}">
+                    <c:set var="num" value="<%=++num%>"></c:set>
                     <jsp:include page="company_edit.jsp">
                         <jsp:param name="name" value="${company.name}"/>
                         <jsp:param name="url" value="${company.url}"/>
+                        <jsp:param name="num" value="${num}"/>
                     </jsp:include>
                     <c:forEach var="period" items="${company.periods}">
                         <jsp:include page="company_period_edit.jsp">
@@ -53,10 +56,19 @@
                             <jsp:param name="end" value="${period.dateAsMMYYYY(period.endDate)}"/>
                             <jsp:param name="title" value="${period.title}"/>
                             <jsp:param name="description" value="${period.description}"/>
+                            <jsp:param name="num" value="${num}"/>
                         </jsp:include>
                     </c:forEach>
+                    <jsp:include page="company_period_edit.jsp">
+                        <jsp:param name="start" value=""/>
+                        <jsp:param name="end" value=""/>
+                        <jsp:param name="title" value=""/>
+                        <jsp:param name="description" value=""/>
+                        <jsp:param name="num" value="${num}"/>
+                    </jsp:include>
                     <div class="spacer"></div>
                 </c:forEach><br>
+                <c:set var="num" value="<%=++num%>"></c:set>
                 <jsp:include page="company_edit.jsp">
                     <jsp:param name="name" value=""/>
                     <jsp:param name="url" value=""/>
@@ -66,6 +78,7 @@
                     <jsp:param name="end" value=""/>
                     <jsp:param name="title" value=""/>
                     <jsp:param name="description" value=""/>
+                    <jsp:param name="num" value="${num}"/>
                 </jsp:include>
             </c:when>
         </c:choose>
@@ -87,7 +100,11 @@
             <c:when test="${stype==\"EXPERIENCE\"||stype==\"EDUCATION\"}">
                 <%request.setAttribute("companies", ((CompanySection) section).getCompanies());%>
                     <c:forEach var="company" items="${companies}">
-                        <div class="job-name"><a class="contact-link" href="${company.url}">${company.name}</a></div>
+                        <c:set var="href" value="${company.url}"></c:set>
+                        <c:if test="${href==\"\"}" >
+                            <c:set var="href" value="javascript:void(0)"></c:set>
+                        </c:if>
+                        <div class="job-name"><a class="contact-link" href="${href}" >${company.name}</a></div>
                         <c:forEach var="period" items="${company.periods}">
                             <jsp:useBean id="period" type="ru.basejava.model.Company.Period"/>
                             <div class="period-position">

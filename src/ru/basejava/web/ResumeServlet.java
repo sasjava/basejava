@@ -62,26 +62,21 @@ public class ResumeServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         request.setCharacterEncoding("UTF-8");
-        doPost(request);
-        response.sendRedirect("resume");
-    }
-
-    private void doPost(HttpServletRequest request) {
         String uuid = request.getParameter("uuid");
         String fullName = condense(request.getParameter("fullName"));
-        if (fullName.length() == 0) {
-            return;
-        }
-        Resume r = uuid.isEmpty() ? new Resume(fullName) : storage.get(uuid);
-        r.setFullName(fullName);
-        setContacts(r, request);
-        setSections(r, request);
+        if (!fullName.isEmpty()) {
+            Resume r = uuid.isEmpty() ? new Resume(fullName) : storage.get(uuid);
+            r.setFullName(fullName);
+            setContacts(r, request);
+            setSections(r, request);
 
-        if (uuid.isEmpty()) {
-            storage.save(r);
-        } else {
-            storage.update(r);
+            if (uuid.isEmpty()) {
+                storage.save(r);
+            } else {
+                storage.update(r);
+            }
         }
+        response.sendRedirect("resume");
     }
 
     private void setContacts(Resume r, HttpServletRequest request) {
@@ -117,28 +112,48 @@ public class ResumeServlet extends HttpServlet {
                         }
                     }
                     case EXPERIENCE, EDUCATION -> {
-                        String[] contentName = request.getParameterValues(sectionName);
-                        String[] contentUrl = request.getParameterValues(sectionName + "url");
-                        String[] contentStart = request.getParameterValues(sectionName + "start");
-                        String[] contentEnd = request.getParameterValues(sectionName + "end");
-                        String[] contentTitle = request.getParameterValues(sectionName + "title");
-                        String[] contentDescr = request.getParameterValues(sectionName + "descr");
-                        List<Company> companies = new ArrayList<>();
-                        for (int i = 0; i < contentName.length; i++) {
-                            String companyName = condense(contentName[i]);
-                            if (!companyName.isEmpty()) {
-                                Company.Period period = new Company.Period(contentStart[i], contentEnd[i], contentTitle[i], contentDescr[i]);
-                                Company company = new Company(companyName, contentUrl[i], period);
-                                companies.add(company);
-                            }
-                        }
-                        r.addSection(sectionType, new CompanySection(companies));
+                        setCompanySection(r, request, sectionType);
                         continue;
                     }
                 }
+                r.getSections().remove(sectionType);
             }
-            r.getSections().remove(sectionType);
         }
+    }
+
+    private void setCompanySection(Resume r, HttpServletRequest request, SectionType sectionType) {
+        String sectionName = sectionType.name();
+        String[] contentName = request.getParameterValues(sectionName);
+        String[] contentUrl = request.getParameterValues(sectionName + "url");
+        List<Company> companies = new ArrayList<>();
+        CompanySection companySection = (CompanySection) r.getSection(sectionType);
+        if (companySection == null) {
+            companySection = new CompanySection(companies);
+        } else {
+            companySection.setCompanies(companies);
+        }
+        for (int i = 0; i < contentName.length; i++) {
+            String companyName = condense(contentName[i]);
+            if (!companyName.isEmpty()) {
+                int num = i + 1;
+                String[] contentStart = request.getParameterValues(sectionName + "start" + num);
+                String[] contentEnd = request.getParameterValues(sectionName + "end" + num);
+                String[] contentTitle = request.getParameterValues(sectionName + "title" + num);
+                String[] contentDescr = request.getParameterValues(sectionName + "descr" + num);
+                List<Company.Period> periods = new ArrayList<>();
+                if (contentStart != null) {
+                    for (int j = 0; j < contentStart.length; j++) {
+                        String start = condense(contentStart[j]);
+                        if (!start.isEmpty()) {
+                            periods.add(new Company.Period(start, condense(contentEnd[j]), condense(contentTitle[j]), condense(contentDescr[j])));
+                        }
+                    }
+                }
+                Company company = new Company(companyName, contentUrl[i], periods);
+                companySection.addCompany(company);
+            }
+        }
+        r.addSection(sectionType, companySection);
     }
 
     private String trim(String value) {

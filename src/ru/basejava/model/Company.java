@@ -11,10 +11,9 @@ import java.time.LocalDate;
 import java.time.Month;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
+import static java.time.LocalDate.now;
 import static java.time.LocalDate.parse;
 import static java.time.YearMonth.of;
 
@@ -33,11 +32,13 @@ public class Company implements Serializable {
     public Company(String name, String url, List<Period> periods) {
         this.name = name;
         this.url = Objects.toString(url, "");
-        this.periods = periods;
+        this.periods = periods.stream().sorted(PERIOD_COMPARATOR).toList();;
     }
 
     public Company() {
     }
+
+    private static final Comparator<Period> PERIOD_COMPARATOR = Comparator.comparing(Period::getBeginDate);
 
     public String getName() {
         return name;
@@ -49,6 +50,13 @@ public class Company implements Serializable {
 
     public List<Period> getPeriods() {
         return periods;
+    }
+
+    public void addPeriod(Period period) {
+        List<Period> periodList = new ArrayList<>();
+        periodList.add(period);
+        periodList.addAll(periods);
+        periods = periodList.stream().sorted(PERIOD_COMPARATOR).toList();
     }
 
     @Override
@@ -78,6 +86,7 @@ public class Company implements Serializable {
         private LocalDate endDate;
         private String title;
         private String description;
+        private static final String NOW = "Сейчас";
 
         public Period(LocalDate beginDate, LocalDate endDate, String title, String description) {
             Objects.requireNonNull(title, "title must not be null");
@@ -99,7 +108,7 @@ public class Company implements Serializable {
         }
 
         public Period(String mmyyyyBegin, String mmyyyyEnd, String title, String description) {
-            this(getDateFromMMYYYY(mmyyyyBegin), getDateFromMMYYYY(mmyyyyEnd), title, description);
+            this(mmyyyyAsDate(mmyyyyBegin), mmyyyyAsDate(mmyyyyEnd), title, description);
         }
 
         public Period() {
@@ -119,10 +128,6 @@ public class Company implements Serializable {
 
         public String getDescription() {
             return description;
-        }
-
-        public String dateAsMMYYYY(LocalDate d) {
-            return d.getYear() <= 1 ? "" : d.format(DateTimeFormatter.ofPattern("MM/yyyy"));
         }
 
         public String getPeriodMonthYear() {
@@ -150,11 +155,17 @@ public class Company implements Serializable {
             return Objects.hash(beginDate, endDate, title, description);
         }
 
-        private static LocalDate getDateFromMMYYYY(String mmyyyy) {
+        public String dateAsMMYYYY(LocalDate d) {
+            return d.getYear() <= 1 ? "" :
+                    d.isAfter(now().withDayOfMonth(1).minusDays(1)) ? NOW :
+                            d.format(DateTimeFormatter.ofPattern("MM/yyyy"));
+        }
+
+        private static LocalDate mmyyyyAsDate(String mmyyyy) {
             try {
                 return parse(mmyyyy + "/01", DateTimeFormatter.ofPattern("MM/yyyy/dd"));
             } catch (DateTimeParseException e) {
-                return LocalDate.of(0,1,1);
+                return mmyyyy == NOW ? LocalDate.now() : LocalDate.of(0, 1, 1);
             }
         }
     }
